@@ -4,9 +4,9 @@ try { require("node:fs").readFileSync(".env","utf8").split("\n").forEach((l)=>{c
 const { openDatabase } = require('./src/db');
 const { createApp } = require('./src/app');
 
-const databaseFile = process.env.VERCEL
-  ? '/tmp/inventory.db'
-  : process.env.DB_FILE;
+// Prefer the configured database path. Vercel's /tmp directory is only a
+// fallback for deployments that have not configured persistent storage.
+const databaseFile = process.env.DB_FILE || (process.env.VERCEL ? '/tmp/inventory.db' : undefined);
 const db = openDatabase(databaseFile);
 const port = Number(process.env.PORT) || 3000;
 const server = createApp(db).listen(port, () => console.log(`Inventory Tracker running at http://localhost:${port}`));
