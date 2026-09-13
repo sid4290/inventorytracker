@@ -24,7 +24,7 @@ function withStatus(row) {
 async function initialize() {
   const client = connection();
   if (!client) return;
-  initialized ||= client(`
+  initialized ||= client.query(`
     CREATE TABLE IF NOT EXISTS inventory_bom (
       bom_id TEXT PRIMARY KEY,
       bom_name TEXT NOT NULL,
@@ -41,7 +41,7 @@ async function initialize() {
 }
 
 async function getBom(bomId) {
-  const rows = await connection()('SELECT * FROM inventory_bom WHERE bom_id = $1', [bomId]);
+  const rows = await connection().query('SELECT * FROM inventory_bom WHERE bom_id = $1', [bomId]);
   return withStatus(rows[0]);
 }
 
@@ -55,12 +55,12 @@ async function listBoms({ search = '', status = 'All' } = {}) {
   if (status === 'Low Stock') clauses.push('current_balance <= safety_stock_level');
   if (status === 'Available') clauses.push('current_balance > safety_stock_level');
   const where = clauses.length ? ` WHERE ${clauses.join(' AND ')}` : '';
-  const rows = await connection()(`SELECT * FROM inventory_bom${where} ORDER BY bom_name`, values);
+  const rows = await connection().query(`SELECT * FROM inventory_bom${where} ORDER BY bom_name`, values);
   return rows.map(withStatus);
 }
 
 async function createBom(values, userId) {
-  await connection()(
+  await connection().query(
     `INSERT INTO inventory_bom
       (bom_id, bom_name, category, price, opening_balance, current_balance, safety_stock_level, created_by)
      VALUES ($1, $2, $3, $4, $5, $5, $6, $7)`,
@@ -70,7 +70,7 @@ async function createBom(values, userId) {
 }
 
 async function updateBom(bomId, values) {
-  const rows = await connection()(
+  const rows = await connection().query(
     `UPDATE inventory_bom
      SET bom_name = $1, category = $2, price = $3, safety_stock_level = $4
      WHERE bom_id = $5
@@ -81,12 +81,12 @@ async function updateBom(bomId, values) {
 }
 
 async function deleteBom(bomId) {
-  const rows = await connection()('DELETE FROM inventory_bom WHERE bom_id = $1 RETURNING bom_id', [bomId]);
+  const rows = await connection().query('DELETE FROM inventory_bom WHERE bom_id = $1 RETURNING bom_id', [bomId]);
   return rows.length === 1;
 }
 
 async function exists(bomId) {
-  const rows = await connection()('SELECT 1 FROM inventory_bom WHERE bom_id = $1', [bomId]);
+  const rows = await connection().query('SELECT 1 FROM inventory_bom WHERE bom_id = $1', [bomId]);
   return rows.length > 0;
 }
 
