@@ -174,7 +174,13 @@ Then `sudo certbot --nginx -d inventory.example.com`.
 - Attach a persistent disk mounted at `/app/data` (SQLite needs a writable, persistent path; ephemeral filesystems lose data on redeploy).
 - Health-check path: `/health`.
 
-### 7d. Backups
+### 7d. Vercel
+
+Import the GitHub repository into Vercel with the project root set to this directory. Set `NODE_ENV=production` and a strong `SESSION_SECRET` in the Vercel project environment variables, then deploy. Vercel uses `api/index.js` as the Express function.
+
+SQLite data on Vercel is temporary and may be reset when the function is recreated. Use a persistent database service for production data.
+
+### 7e. Backups
 
 The whole database is one file:
 
