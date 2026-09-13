@@ -36,16 +36,21 @@ async function initialize() {
       created_by INTEGER NOT NULL,
       created_date TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
-  `);
+  `).catch((error) => {
+    initialized = undefined;
+    throw error;
+  });
   await initialized;
 }
 
 async function getBom(bomId) {
+  await initialize();
   const rows = await connection().query('SELECT * FROM inventory_bom WHERE bom_id = $1', [bomId]);
   return withStatus(rows[0]);
 }
 
 async function listBoms({ search = '', status = 'All' } = {}) {
+  await initialize();
   const clauses = [];
   const values = [];
   if (search.trim()) {
@@ -60,6 +65,7 @@ async function listBoms({ search = '', status = 'All' } = {}) {
 }
 
 async function createBom(values, userId) {
+  await initialize();
   await connection().query(
     `INSERT INTO inventory_bom
       (bom_id, bom_name, category, price, opening_balance, current_balance, safety_stock_level, created_by)
@@ -70,6 +76,7 @@ async function createBom(values, userId) {
 }
 
 async function updateBom(bomId, values) {
+  await initialize();
   const rows = await connection().query(
     `UPDATE inventory_bom
      SET bom_name = $1, category = $2, price = $3, safety_stock_level = $4
@@ -81,11 +88,13 @@ async function updateBom(bomId, values) {
 }
 
 async function deleteBom(bomId) {
+  await initialize();
   const rows = await connection().query('DELETE FROM inventory_bom WHERE bom_id = $1 RETURNING bom_id', [bomId]);
   return rows.length === 1;
 }
 
 async function exists(bomId) {
+  await initialize();
   const rows = await connection().query('SELECT 1 FROM inventory_bom WHERE bom_id = $1', [bomId]);
   return rows.length > 0;
 }

@@ -24,11 +24,6 @@ function createApp(db) {
     maxAge: 8 * 60 * 60 * 1000,
   }));
   const useCloudBoms = Boolean(process.env.DATABASE_URL);
-  const cloudReady = useCloudBoms ? cloudBoms.initialize() : Promise.resolve();
-  app.use(async (req, res, next) => {
-    await cloudReady;
-    next();
-  });
 
   app.get('/health', (req, res) => {
     try { db.prepare('SELECT 1').get(); res.json({ status: 'ok' }); }
