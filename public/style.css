@@ -112,7 +112,12 @@ tr.muted td { color: var(--ink-soft); }
 .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1.6rem; align-items: start; }
 
 /* login */
-.login-shell { width: min(900px, 94vw); display: grid; grid-template-columns: .9fr 1.1fr; background: rgba(255,255,255,.8); border: 1px solid rgba(211,217,212,.9); border-radius: 16px; overflow: hidden; box-shadow: 0 24px 70px rgba(27,36,48,.12); backdrop-filter: blur(12px); animation: login-rise .65s ease both; }
+.login-page { width: min(900px, 94vw); display: flex; flex-direction: column; gap: 1rem; align-items: stretch; }
+.login-topmark { display: flex; align-items: center; gap: .7rem; padding: 0 .35rem; color: var(--ink); }
+.login-topmark strong { font-size: 1.35rem; letter-spacing: -.02em; }
+.login-mark { width: 2rem; height: 2rem; display: grid; place-items: center; border-radius: 7px; background: var(--action); color: #fff; font-size: .7rem; font-weight: 800; letter-spacing: .04em; box-shadow: 0 5px 14px rgba(36,87,166,.25); }
+.login-topline { margin-left: auto; color: var(--ink-soft); font-size: .8rem; }
+.login-shell { width: 100%; display: grid; grid-template-columns: .9fr 1.1fr; background: rgba(255,255,255,.8); border: 1px solid rgba(211,217,212,.9); border-radius: 16px; overflow: hidden; box-shadow: 0 24px 70px rgba(27,36,48,.12); backdrop-filter: blur(12px); animation: login-rise .65s ease both; }
 .login-intro { min-height: 500px; padding: 2.6rem; color: #f4f7fb; background: linear-gradient(145deg, #18283b 0%, #245075 56%, #2f7d7a 100%); display: flex; flex-direction: column; justify-content: space-between; position: relative; overflow: hidden; }
 .login-intro::after { content: ''; width: 220px; height: 220px; border: 1px solid rgba(255,255,255,.22); border-radius: 50%; position: absolute; right: -70px; bottom: 70px; box-shadow: 0 0 0 24px rgba(255,255,255,.04), 0 0 0 48px rgba(255,255,255,.035); }
 .login-kicker, .eyebrow { text-transform: uppercase; letter-spacing: .14em; font-size: .68rem; font-weight: 700; }
@@ -157,6 +162,7 @@ tr.muted td { color: var(--ink-soft); }
   .two-col { grid-template-columns: 1fr; }
   table { display: block; overflow-x: auto; }
   .login-shell { grid-template-columns: 1fr; }
+  .login-topline { display: none; }
   .login-intro { min-height: 250px; padding: 1.75rem; }
   .login-intro h1 { font-size: 3.2rem; }
   .login-card { padding: 2rem; }
@@ -168,7 +174,10 @@ tr.muted td { color: var(--ink-soft); }
   .login-form { gap: .8rem; }
 }
 @media (max-width: 480px) {
-  .login-shell { width: min(100%, 390px); }
+  .login-page { width: min(100%, 390px); }
+  .login-topmark { padding: 0 .1rem; }
+  .login-topmark strong { font-size: 1.15rem; }
+  .login-shell { width: 100%; }
   .login-intro { min-height: 210px; }
   .login-intro h1 { font-size: 2.8rem; }
   .login-intro p { font-size: .9rem; max-width: 240px; }

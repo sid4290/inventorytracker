@@ -1,5 +1,7 @@
 <%- include('partials/header', { title: 'Log in' }) %>
-<section class="login-shell" aria-label="Inventory Tracker sign in">
+<section class="login-page" aria-label="Inventory Tracker sign in">
+  <div class="login-topmark"><span class="login-mark" aria-hidden="true">IT</span><strong>Inventory Tracker</strong><span class="login-topline">Control your stock with confidence</span></div>
+  <div class="login-shell">
   <div class="login-intro">
     <span class="login-kicker">Operations workspace</span>
     <h1>Inventory<br><em>Tracker</em></h1>
@@ -15,6 +17,7 @@
       <button class="primary login-submit" type="submit"><span>Enter workspace</span><b aria-hidden="true">→</b></button>
     </form>
     <details class="demo-access"><summary>Open demo accounts</summary><p>staff / staff123<br>manager / manager123<br>owner / owner123<br>admin / admin123</p></details>
+  </div>
   </div>
 </section>
 <%- include('partials/footer') %>
