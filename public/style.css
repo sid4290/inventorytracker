@@ -129,6 +129,7 @@ tr.muted td { color: var(--ink-soft); }
 .login-signal i { width: 8px; height: 8px; border-radius: 50%; background: #8de0ba; box-shadow: 0 0 0 5px rgba(141,224,186,.15); grid-row: span 2; }
 .login-signal strong { color: #fff; font-weight: 600; }
 .login-card { background: rgba(255,255,255,.88); padding: 3rem; width: auto; display: flex; flex-direction: column; gap: 1.5rem; }
+.login-form-brand { color: var(--action); font-size: 1.2rem; font-weight: 700; letter-spacing: -.02em; margin-bottom: -.7rem; }
 .login-heading h2 { font-size: 1.65rem; margin: .45rem 0 .35rem; }
 .login-heading p { margin: 0; }
 .eyebrow { color: var(--action); }
