@@ -38,12 +38,12 @@ test('INV-FR-13 duplicate BoM ID rejected', () => {
   assert.throws(() => s.createBom(db, bom(), staff.user_id), (e) => /already exists/.test(e.errors.bom_id));
 });
 
-test('INV-FR-05/14 edit is role-gated and never changes balance', () => {
+test('INV-FR-05/14 edit is role-gated and updates balance for authorized users', () => {
   s.createBom(db, bom(), staff.user_id);
   assert.throws(() => s.updateBom(db, 'B-100', bom({ bom_name: 'X' }), staff.role), /Not permitted/);
   const updated = s.updateBom(db, 'B-100', bom({ bom_name: 'Steel bracket v2', balance: 999 }), manager.role);
   assert.equal(updated.bom_name, 'Steel bracket v2');
-  assert.equal(updated.current_balance, 50);
+  assert.equal(updated.current_balance, 999);
 });
 
 test('INV-FR-06/15 delete is role-gated', () => {

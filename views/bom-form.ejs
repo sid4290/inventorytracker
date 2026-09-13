@@ -16,7 +16,9 @@
     <input name="balance" type="number" step="1" min="0" value="<%= values.balance ?? '' %>" required>
     <small class="muted">Saved as the opening balance. Later changes go through stock in / out.</small><%- err('balance') %></label>
   <% } else { %>
-  <label>Current balance <input value="<%= values.balance %>" readonly><small class="muted">Change this by recording a stock movement.</small></label>
+  <label>Current balance
+    <input name="balance" type="number" step="1" min="0" value="<%= values.balance ?? '' %>" required>
+    <small class="muted">Use stock in / out for routine movements; this field is available for authorized corrections.</small><%- err('balance') %></label>
   <% } %>
   <label>Safety stock level
     <input name="safety_stock_level" type="number" step="1" min="0" value="<%= values.safety_stock_level ?? '' %>" required>

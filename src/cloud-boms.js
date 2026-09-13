@@ -88,10 +88,10 @@ async function updateBom(bomId, values) {
   await initialize();
   const rows = await connection().query(
     `UPDATE inventory_bom
-     SET bom_name = $1, category = $2, price = $3, safety_stock_level = $4
-     WHERE bom_id = $5
+      SET bom_name = $1, category = $2, price = $3, current_balance = $4, safety_stock_level = $5
+      WHERE bom_id = $6
      RETURNING *`,
-    [values.bom_name, values.category, values.price, values.safety_stock_level, bomId]
+        [values.bom_name, values.category, values.price, values.balance, values.safety_stock_level, bomId]
   );
   return withStatus(rows[0]);
 }

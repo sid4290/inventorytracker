@@ -28,7 +28,7 @@ function validateBomInput(input, { isNew }) {
   if (!bom_name) errors.bom_name = 'Name is required';
   if (!CATEGORIES.includes(category)) errors.category = 'Choose a category';
   if (input.price === '' || input.price == null || Number.isNaN(price) || price < 0) errors.price = 'Enter a price of 0 or more';
-  if (isNew && (!Number.isInteger(balance) || balance < 0)) errors.balance = 'Enter a whole-number balance of 0 or more';
+  if (!Number.isInteger(balance) || balance < 0) errors.balance = 'Enter a whole-number balance of 0 or more';
   if (!Number.isInteger(safety) || safety < 0) errors.safety_stock_level = 'Enter a whole-number safety stock level';
 
   return { errors, values: { bom_id, bom_name, category, price, balance, safety_stock_level: safety } };
@@ -52,9 +52,8 @@ function updateBom(db, bomId, input, role) {
   if (!canModifyBom(role)) throw new ValidationError('Not permitted');                       // FR14
   const { errors, values } = validateBomInput(input, { isNew: false });
   if (Object.keys(errors).length) throw Object.assign(new ValidationError('Invalid BoM'), { errors });
-  // NFR5: balances are only changed through stock transactions, never by editing
-  const res = db.prepare('UPDATE BoM SET bom_name = ?, category = ?, price = ?, safety_stock_level = ? WHERE bom_id = ?')
-    .run(values.bom_name, values.category, values.price, values.safety_stock_level, bomId);
+  const res = db.prepare('UPDATE BoM SET bom_name = ?, category = ?, price = ?, current_balance = ?, safety_stock_level = ? WHERE bom_id = ?')
+    .run(values.bom_name, values.category, values.price, values.balance, values.safety_stock_level, bomId);
   if (res.changes === 0) throw new ValidationError('BoM not found');
   maybeGeneratePurchaseOrder(db, bomId); // raising safety stock can push a BoM into low stock
   return getBom(db, bomId);
