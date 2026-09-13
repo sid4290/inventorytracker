@@ -3,6 +3,7 @@ const express = require('express');
 const cookieSession = require('cookie-session');
 const { CATEGORIES } = require('./db');
 const s = require('./services');
+const cloudBoms = require('./cloud-boms');
 
 function createApp(db) {
   const app = express();
@@ -22,6 +23,12 @@ function createApp(db) {
     secure: isProd,
     maxAge: 8 * 60 * 60 * 1000,
   }));
+  const useCloudBoms = Boolean(process.env.DATABASE_URL);
+  const cloudReady = useCloudBoms ? cloudBoms.initialize() : Promise.resolve();
+  app.use(async (req, res, next) => {
+    await cloudReady;
+    next();
+  });
 
   app.get('/health', (req, res) => {
     try { db.prepare('SELECT 1').get(); res.json({ status: 'ok' }); }
@@ -66,17 +73,28 @@ function createApp(db) {
   app.get('/', (req, res) => res.render('dashboard', { summary: s.dashboardSummary(db), lowStock: s.listLowStock(db).slice(0, 5) }));
 
   // ---- INV-SCR-03 BoM List (FR3–FR6, FR12, FR15, FR16) ----
-  app.get('/boms', (req, res) => {
+  app.get('/boms', async (req, res) => {
     const search = req.query.q || '';
     const status = req.query.status || 'All';
-    res.render('bom-list', { boms: s.listBoms(db, { search, status }), search, status });
+    const boms = useCloudBoms ? await cloudBoms.listBoms({ search, status }) : s.listBoms(db, { search, status });
+    res.render('bom-list', { boms, search, status });
   });
 
   // ---- INV-SCR-04 Add BoM (FR3, FR4, FR7, FR13) ----
   app.get('/boms/new', (req, res) => res.render('bom-form', { mode: 'new', values: {}, errors: {} }));
-  app.post('/boms/new', (req, res) => {
+  app.post('/boms/new', async (req, res) => {
     try {
-      const created = s.createBom(db, req.body, req.session.user.user_id);
+      let created;
+      if (useCloudBoms) {
+        const { errors, values } = s.validateBomInput(req.body, { isNew: true });
+        if (Object.keys(errors).length) throw Object.assign(new s.ValidationError('Invalid BoM'), { errors });
+        if (await cloudBoms.exists(values.bom_id)) {
+          throw Object.assign(new s.ValidationError('Duplicate'), { errors: { bom_id: `BoM ID ${values.bom_id} already exists` } });
+        }
+        created = await cloudBoms.createBom(values, req.session.user.user_id);
+      } else {
+        created = s.createBom(db, req.body, req.session.user.user_id);
+      }
       flash(req, 'ok', `Added ${created.bom_name} (${created.bom_id}) with an opening balance of ${created.opening_balance}.`);
       res.redirect('/boms');
     } catch (err) {
@@ -86,14 +104,22 @@ function createApp(db) {
   });
 
   // ---- INV-SCR-05 Edit BoM (FR5, FR7, FR14) ----
-  app.get('/boms/:id/edit', requireModifier, (req, res) => {
-    const bom = s.getBom(db, req.params.id);
+  app.get('/boms/:id/edit', requireModifier, async (req, res) => {
+    const bom = useCloudBoms ? await cloudBoms.getBom(req.params.id) : s.getBom(db, req.params.id);
     if (!bom) return res.status(404).render('not-found');
     res.render('bom-form', { mode: 'edit', values: { ...bom, balance: bom.current_balance }, errors: {} });
   });
-  app.post('/boms/:id/edit', requireModifier, (req, res) => {
+  app.post('/boms/:id/edit', requireModifier, async (req, res) => {
     try {
-      const updated = s.updateBom(db, req.params.id, req.body, req.session.user.role);
+      let updated;
+      if (useCloudBoms) {
+        const { errors, values } = s.validateBomInput({ ...req.body, bom_id: req.params.id }, { isNew: false });
+        if (Object.keys(errors).length) throw Object.assign(new s.ValidationError('Invalid BoM'), { errors });
+        updated = await cloudBoms.updateBom(req.params.id, values);
+        if (!updated) throw new s.ValidationError('BoM not found');
+      } else {
+        updated = s.updateBom(db, req.params.id, req.body, req.session.user.role);
+      }
       flash(req, 'ok', `Saved changes to ${updated.bom_name}.`);
       res.redirect('/boms');
     } catch (err) {
@@ -101,8 +127,9 @@ function createApp(db) {
       res.status(422).render('bom-form', { mode: 'edit', values: { ...req.body, bom_id: req.params.id }, errors: err.errors || {} });
     }
   });
-  app.post('/boms/:id/delete', requireModifier, (req, res) => {
-    s.deleteBom(db, req.params.id, req.session.user.role);
+  app.post('/boms/:id/delete', requireModifier, async (req, res) => {
+    if (useCloudBoms) await cloudBoms.deleteBom(req.params.id);
+    else s.deleteBom(db, req.params.id, req.session.user.role);
     flash(req, 'ok', `Deleted ${req.params.id}.`);
     res.redirect('/boms');
   });

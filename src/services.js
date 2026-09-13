@@ -156,7 +156,7 @@ function dashboardSummary(db) {
 }
 
 module.exports = {
-  ValidationError, canModifyBom, authenticate,
+  ValidationError, canModifyBom, authenticate, validateBomInput,
   createBom, updateBom, deleteBom, getBom, listBoms, listLowStock,
   recordTransaction, listTransactions,
   maybeGeneratePurchaseOrder, listPurchaseOrders, reviewPurchaseOrder, dashboardSummary,
