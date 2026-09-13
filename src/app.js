@@ -65,7 +65,11 @@ function createApp(db) {
   app.use(requireLogin);
 
   // ---- INV-SCR-02 Dashboard ----
-  app.get('/', (req, res) => res.render('dashboard', { summary: s.dashboardSummary(db), lowStock: s.listLowStock(db).slice(0, 5) }));
+  app.get('/', async (req, res) => {
+    const summary = useCloudBoms ? await cloudBoms.dashboardSummary() : s.dashboardSummary(db);
+    const lowStock = useCloudBoms ? await cloudBoms.listLowStock() : s.listLowStock(db).slice(0, 5);
+    res.render('dashboard', { summary, lowStock: lowStock.slice(0, 5) });
+  });
 
   // ---- INV-SCR-03 BoM List (FR3–FR6, FR12, FR15, FR16) ----
   app.get('/boms', async (req, res) => {
@@ -130,31 +134,43 @@ function createApp(db) {
   });
 
   // ---- INV-SCR-06 Stock Transaction (FR8, FR9, FR10) ----
-  app.get('/transactions', (req, res) => res.render('transaction', {
-    boms: s.listBoms(db), values: { bom_id: req.query.bom || '', txn_type: req.query.type || 'IN' }, error: null,
-    recent: s.listTransactions(db, { limit: 15 }),
+  app.get('/transactions', async (req, res) => res.render('transaction', {
+    boms: useCloudBoms ? await cloudBoms.listBoms() : s.listBoms(db),
+    values: { bom_id: req.query.bom || '', txn_type: req.query.type || 'IN' }, error: null,
+    recent: useCloudBoms ? await cloudBoms.listTransactions(15) : s.listTransactions(db, { limit: 15 }),
   }));
-  app.post('/transactions', (req, res) => {
+  app.post('/transactions', async (req, res) => {
     try {
-      const { bom, purchaseOrder } = s.recordTransaction(db, req.body, req.session.user.user_id);
+      const { bom, purchaseOrder } = useCloudBoms
+        ? await cloudBoms.recordTransaction(req.body, req.session.user.user_id)
+        : s.recordTransaction(db, req.body, req.session.user.user_id);
       const verb = req.body.txn_type === 'IN' ? 'Received' : 'Issued';
       let text = `${verb} ${req.body.quantity} × ${bom.bom_name}. Balance is now ${bom.current_balance}.`;
       if (purchaseOrder) text += ` Balance is at or below safety stock — purchase order PO-${purchaseOrder.po_id} was generated.`;
       flash(req, purchaseOrder ? 'warn' : 'ok', text);
       res.redirect('/transactions');
     } catch (err) {
-      if (!(err instanceof s.ValidationError)) throw err;
-      res.status(422).render('transaction', { boms: s.listBoms(db), values: req.body, error: err.message, recent: s.listTransactions(db, { limit: 15 }) });
+      if (!(err instanceof s.ValidationError) && !useCloudBoms) throw err;
+      res.status(422).render('transaction', {
+        boms: useCloudBoms ? await cloudBoms.listBoms() : s.listBoms(db),
+        values: req.body, error: err.message,
+        recent: useCloudBoms ? await cloudBoms.listTransactions(15) : s.listTransactions(db, { limit: 15 }),
+      });
     }
   });
 
   // ---- INV-SCR-07 Low-Stock Status (FR10b, FR11) ----
-  app.get('/low-stock', (req, res) => res.render('low-stock', { items: s.listLowStock(db) }));
+  app.get('/low-stock', async (req, res) => res.render('low-stock', {
+    items: useCloudBoms ? await cloudBoms.listLowStock() : s.listLowStock(db),
+  }));
 
   // ---- INV-SCR-08 Purchase Orders (SDD FR-10) ----
-  app.get('/purchase-orders', (req, res) => res.render('purchase-orders', { orders: s.listPurchaseOrders(db) }));
-  app.post('/purchase-orders/:id/review', requireModifier, (req, res) => {
-    s.reviewPurchaseOrder(db, Number(req.params.id), req.session.user);
+  app.get('/purchase-orders', async (req, res) => res.render('purchase-orders', {
+    orders: useCloudBoms ? await cloudBoms.listPurchaseOrders() : s.listPurchaseOrders(db),
+  }));
+  app.post('/purchase-orders/:id/review', requireModifier, async (req, res) => {
+    if (useCloudBoms) await cloudBoms.reviewPurchaseOrder(Number(req.params.id), req.session.user.user_id);
+    else s.reviewPurchaseOrder(db, Number(req.params.id), req.session.user);
     flash(req, 'ok', `Marked PO-${req.params.id} as reviewed.`);
     res.redirect('/purchase-orders');
   });
