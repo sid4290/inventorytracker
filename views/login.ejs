@@ -1,14 +1,20 @@
 <%- include('partials/header', { title: 'Log in' }) %>
-<section class="login-card">
-  <h1>Inventory Tracker</h1>
-  <p class="muted">Log in with the account your administrator gave you.</p>
-  <% if (error) { %><p class="field-error" role="alert"><%= error %></p><% } %>
-  <form method="post" action="/login" class="stack">
-    <label>Username <input name="username" value="<%= username %>" required autofocus autocomplete="username"></label>
-    <label>Password <input name="password" type="password" required autocomplete="current-password"></label>
-    <button class="primary">Log in</button>
-  </form>
-  <details class="muted small"><summary>Demo accounts</summary>
-    <p>staff / staff123 · manager / manager123 · owner / owner123 · admin / admin123</p></details>
+<section class="login-shell" aria-label="Inventory Tracker sign in">
+  <div class="login-intro">
+    <span class="login-kicker">Operations workspace</span>
+    <h1>Inventory<br><em>Tracker</em></h1>
+    <p>Keep every component, movement, and replenishment decision in view.</p>
+    <div class="login-signal"><i></i><span>System ready</span><strong>Live inventory control</strong></div>
+  </div>
+  <div class="login-card">
+    <div class="login-heading"><span class="eyebrow">Welcome back</span><h2>Sign in to continue</h2><p class="muted">Use your assigned account to open the workspace.</p></div>
+    <% if (error) { %><p class="field-error login-error" role="alert"><%= error %></p><% } %>
+    <form method="post" action="/login" class="stack login-form">
+      <label>Username <input name="username" value="<%= username %>" required autofocus autocomplete="username" placeholder="e.g. manager"></label>
+      <label class="password-field">Password <span class="password-wrap"><input name="password" type="password" required autocomplete="current-password" placeholder="Enter your password"><button type="button" class="password-toggle" aria-label="Show password" aria-pressed="false">Show</button></span></label>
+      <button class="primary login-submit" type="submit"><span>Enter workspace</span><b aria-hidden="true">→</b></button>
+    </form>
+    <details class="demo-access"><summary>Open demo accounts</summary><p>staff / staff123<br>manager / manager123<br>owner / owner123<br>admin / admin123</p></details>
+  </div>
 </section>
 <%- include('partials/footer') %>
