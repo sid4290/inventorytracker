@@ -4,7 +4,10 @@ try { require("node:fs").readFileSync(".env","utf8").split("\n").forEach((l)=>{c
 const { openDatabase } = require('./src/db');
 const { createApp } = require('./src/app');
 
-const db = openDatabase();
+const databaseFile = process.env.VERCEL
+  ? '/tmp/inventory.db'
+  : process.env.DB_FILE;
+const db = openDatabase(databaseFile);
 const port = Number(process.env.PORT) || 3000;
 const server = createApp(db).listen(port, () => console.log(`Inventory Tracker running at http://localhost:${port}`));
 
