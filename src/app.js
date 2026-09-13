@@ -141,11 +141,12 @@ function createApp(db) {
   }));
   app.post('/transactions', async (req, res) => {
     try {
-      const { bom, purchaseOrder } = useCloudBoms
+      const { bom, purchaseOrder, receivedAgainst } = useCloudBoms
         ? await cloudBoms.recordTransaction(req.body, req.session.user.user_id)
         : s.recordTransaction(db, req.body, req.session.user.user_id);
       const verb = req.body.txn_type === 'IN' ? 'Received' : 'Issued';
       let text = `${verb} ${req.body.quantity} × ${bom.bom_name}. Balance is now ${bom.current_balance}.`;
+      if (receivedAgainst) text += ` Stock-in was recorded against PO-${receivedAgainst.po_id}.`;
       if (purchaseOrder) text += ` Balance is at or below safety stock — purchase order PO-${purchaseOrder.po_id} was generated.`;
       flash(req, purchaseOrder ? 'warn' : 'ok', text);
       res.redirect('/transactions');

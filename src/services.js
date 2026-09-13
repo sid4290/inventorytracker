@@ -103,9 +103,12 @@ function recordTransaction(db, { bom_id, txn_type, quantity }, userId) {
 
   db.exec('BEGIN');                                                                                   // NFR8 atomic
   try {
+    const openPo = txn_type === 'IN'
+      ? db.prepare("SELECT po_id FROM PurchaseOrder WHERE bom_id = ? AND status = 'Generated' ORDER BY po_id LIMIT 1").get(bom_id)
+      : null;
     db.prepare('UPDATE BoM SET current_balance = current_balance + ? WHERE bom_id = ?').run(delta, bom_id); // FR8 / FR9
-    db.prepare('INSERT INTO StockTransaction (bom_id, txn_type, quantity, performed_by) VALUES (?, ?, ?, ?)')
-      .run(bom_id, txn_type, qty, userId);
+    db.prepare('INSERT INTO StockTransaction (bom_id, txn_type, quantity, performed_by, purchase_order_id) VALUES (?, ?, ?, ?, ?)')
+      .run(bom_id, txn_type, qty, userId, openPo?.po_id || null);
     const po = maybeGeneratePurchaseOrder(db, bom_id);
     db.exec('COMMIT');
     return { bom: getBom(db, bom_id), purchaseOrder: po };

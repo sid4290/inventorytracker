@@ -18,8 +18,8 @@
 <section>
   <h2>Recent transactions</h2>
   <% if (!recent.length) { %><p class="empty">Nothing recorded yet.</p><% } else { %>
-  <table><thead><tr><th>When</th><th>BoM</th><th>Type</th><th class="num">Qty</th><th>By</th></tr></thead><tbody>
-    <% for (const t of recent) { %><tr><td class="muted small"><%= t.txn_date %></td><td><%= t.bom_name %></td><td><%= t.txn_type === 'IN' ? 'Stock in' : 'Stock out' %></td><td class="num"><%= t.txn_type === 'IN' ? '+' : '−' %><%= t.quantity %></td><td class="muted"><%= t.performed_by_name %></td></tr><% } %>
+  <table><thead><tr><th>When</th><th>BoM</th><th>Type</th><th class="num">Qty</th><th>PO</th><th>By</th></tr></thead><tbody>
+    <% for (const t of recent) { %><tr><td class="muted small"><%= t.txn_date %></td><td><%= t.bom_name %></td><td><%= t.txn_type === 'IN' ? 'Stock in' : 'Stock out' %></td><td class="num"><%= t.txn_type === 'IN' ? '+' : '−' %><%= t.quantity %></td><td><%= t.purchase_order_id ? 'PO-' + t.purchase_order_id : '—' %></td><td class="muted"><%= t.performed_by_name || '' %></td></tr><% } %>
   </tbody></table><% } %>
 </section>
 </div>

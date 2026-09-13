@@ -36,8 +36,9 @@ async function initialize() {
     await client.query(`CREATE TABLE IF NOT EXISTS inventory_transaction (
       txn_id SERIAL PRIMARY KEY, bom_id TEXT NOT NULL REFERENCES inventory_bom(bom_id) ON DELETE CASCADE,
       txn_type TEXT NOT NULL CHECK (txn_type IN ('IN', 'OUT')), quantity INTEGER NOT NULL CHECK (quantity > 0),
-      txn_date TIMESTAMPTZ NOT NULL DEFAULT NOW(), performed_by INTEGER NOT NULL
+      txn_date TIMESTAMPTZ NOT NULL DEFAULT NOW(), performed_by INTEGER NOT NULL, purchase_order_id INTEGER
     )`);
+    try { await client.query('ALTER TABLE inventory_transaction ADD COLUMN purchase_order_id INTEGER'); } catch {}
     await client.query(`CREATE TABLE IF NOT EXISTS inventory_purchase_order (
       po_id SERIAL PRIMARY KEY, bom_id TEXT NOT NULL REFERENCES inventory_bom(bom_id) ON DELETE CASCADE,
       suggested_reorder_qty INTEGER NOT NULL CHECK (suggested_reorder_qty > 0),
@@ -151,13 +152,16 @@ async function recordTransaction({ bom_id, txn_type, quantity }, userId) {
   if (!bom) throw new Error('BoM not found');
   if (txn_type === 'OUT' && qty > bom.current_balance) throw new Error(`Only ${bom.current_balance} available - cannot issue ${qty}`);
   const delta = txn_type === 'IN' ? qty : -qty;
+  const openPo = txn_type === 'IN'
+    ? await connection().query("SELECT po_id FROM inventory_purchase_order WHERE bom_id = $1 AND status = 'Generated' ORDER BY po_id LIMIT 1", [bom_id])
+    : [];
   await connection().query('UPDATE inventory_bom SET current_balance = current_balance + $1 WHERE bom_id = $2', [delta, bom_id]);
   await connection().query(
-    'INSERT INTO inventory_transaction (bom_id, txn_type, quantity, performed_by) VALUES ($1, $2, $3, $4)',
-    [bom_id, txn_type, qty, userId]
+    'INSERT INTO inventory_transaction (bom_id, txn_type, quantity, performed_by, purchase_order_id) VALUES ($1, $2, $3, $4, $5)',
+    [bom_id, txn_type, qty, userId, openPo[0]?.po_id || null]
   );
   const purchaseOrder = await maybeGeneratePurchaseOrder(bom_id);
-  return { bom: await getBom(bom_id), purchaseOrder };
+  return { bom: await getBom(bom_id), purchaseOrder, receivedAgainst: openPo[0] || null };
 }
 
 async function listPurchaseOrders() {

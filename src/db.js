@@ -38,7 +38,8 @@ const SCHEMA = `
     txn_type     TEXT NOT NULL CHECK (txn_type IN ('IN','OUT')),
     quantity     INTEGER NOT NULL CHECK (quantity > 0),
     txn_date     TEXT NOT NULL DEFAULT (datetime('now')),
-    performed_by INTEGER NOT NULL REFERENCES User(user_id)
+    performed_by INTEGER NOT NULL REFERENCES User(user_id),
+    purchase_order_id INTEGER REFERENCES PurchaseOrder(po_id)
   );
 
   CREATE TABLE IF NOT EXISTS PurchaseOrder (
@@ -67,6 +68,7 @@ function openDatabase(file = process.env.DB_FILE || path.join(__dirname, '..', '
   if (file !== ':memory:') require('node:fs').mkdirSync(path.dirname(file), { recursive: true });
   const db = new DatabaseSync(file);
   db.exec(SCHEMA);
+  try { db.exec('ALTER TABLE StockTransaction ADD COLUMN purchase_order_id INTEGER REFERENCES PurchaseOrder(po_id)'); } catch {}
   seedUsers(db);
   return db;
 }
