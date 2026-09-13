@@ -17,6 +17,6 @@
     "express-session": "^1.19.0"
   },
   "engines": {
-    "node": ">=22.5"
+    "node": "24.x"
   }
 }
