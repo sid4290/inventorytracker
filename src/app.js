@@ -1,6 +1,6 @@
 const path = require('node:path');
 const express = require('express');
-const session = require('express-session');
+const cookieSession = require('cookie-session');
 const { CATEGORIES } = require('./db');
 const s = require('./services');
 
@@ -14,11 +14,13 @@ function createApp(db) {
   app.set('views', path.join(__dirname, '..', 'views'));
   app.use(express.urlencoded({ extended: false }));
   app.use(express.static(path.join(__dirname, '..', 'public')));
-  app.use(session({
-    secret: process.env.SESSION_SECRET || 'inventory-tracker-dev-secret',
-    resave: false,
-    saveUninitialized: false,
-    cookie: { httpOnly: true, sameSite: 'lax', secure: isProd, maxAge: 8 * 60 * 60 * 1000 },
+  app.use(cookieSession({
+    name: 'inventory.session',
+    keys: [process.env.SESSION_SECRET || 'inventory-tracker-dev-secret'],
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: isProd,
+    maxAge: 8 * 60 * 60 * 1000,
   }));
 
   app.get('/health', (req, res) => {
@@ -53,7 +55,10 @@ function createApp(db) {
     req.session.user = user;
     res.redirect('/');
   });
-  app.post('/logout', (req, res) => req.session.destroy(() => res.redirect('/login')));
+  app.post('/logout', (req, res) => {
+    req.session = null;
+    res.redirect('/login');
+  });
 
   app.use(requireLogin);
 
