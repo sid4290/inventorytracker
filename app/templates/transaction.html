@@ -1,0 +1,22 @@
+{% extends "base.html" %}{% block title %}Stock transaction · Inventory Tracker{% endblock %}
+{% block content %}
+<header class="page"><h1>Stock transaction</h1></header>
+<form method="post" class="stack form" novalidate>
+  <label>BoM
+    <select name="bom_id" required>
+      <option value="">Choose…</option>
+      {% for b in boms %}<option value="{{ b.bom_id }}" {{ 'selected' if form.get('bom_id') == b.bom_id }}>{{ b.bom_id }} — {{ b.bom_name }} (in stock: {{ b.current_balance }})</option>{% endfor %}
+    </select>
+  </label>
+  <fieldset class="choice">
+    <legend>Type</legend>
+    <label><input type="radio" name="txn_type" value="IN" {{ 'checked' if form.get('txn_type', 'IN') == 'IN' }}> Stock in</label>
+    <label><input type="radio" name="txn_type" value="OUT" {{ 'checked' if form.get('txn_type') == 'OUT' }}> Stock out</label>
+  </fieldset>
+  <label>Quantity <input name="quantity" type="number" min="1" step="1" value="{{ form.get('quantity', '') }}" required></label>
+  <div class="actions">
+    <button class="primary">Record transaction</button>
+    <a class="button" href="{{ url_for('bom.list_bom') }}">Cancel</a>
+  </div>
+</form>
+{% endblock %}

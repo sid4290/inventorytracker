@@ -1,0 +1,33 @@
+{% extends "base.html" %}{% block title %}BoM list · Inventory Tracker{% endblock %}
+{% block content %}
+<header class="page"><h1>BoM list</h1><a class="button primary" href="{{ url_for('bom.add') }}">Add BoM</a></header>
+<form method="get" class="filters">
+  <input type="search" name="q" value="{{ q }}" placeholder="Search by name" aria-label="Search by name">
+  <select name="status" aria-label="Stock status">
+    {% for s in ['All', 'Available', 'Low Stock'] %}<option {{ 'selected' if s == status }}>{{ s }}</option>{% endfor %}
+  </select>
+  <button>Apply</button>
+  {% if q or status != 'All' %}<a href="{{ url_for('bom.list_bom') }}">Clear</a>{% endif %}
+</form>
+{% if boms %}
+<table>
+  <thead><tr><th>ID</th><th>Name</th><th>Category</th><th class="num">Price</th><th class="num">Balance</th><th class="num">Safety stock</th><th>Status</th><th></th></tr></thead>
+  <tbody>{% for b in boms %}{% set st = stock_status(b) %}
+  <tr class="{{ 'low' if st == 'Low Stock' }}">
+    <td>{{ b.bom_id }}</td><td>{{ b.bom_name }}</td><td>{{ b.category }}</td>
+    <td class="num">{{ '%.2f'|format(b.price) }}</td><td class="num">{{ b.current_balance }}</td>
+    <td class="num">{{ b.safety_stock_level }}</td>
+    <td><span class="badge {{ 'warn' if st == 'Low Stock' else 'ok' }}">{{ st }}</span></td>
+    <td class="row-actions">
+      <a href="{{ url_for('txn.new', bom_id=b.bom_id) }}">Stock in/out</a>
+      {% if g.can_modify %}
+      <a href="{{ url_for('bom.edit', bom_id=b.bom_id) }}">Edit</a>
+      <form method="post" action="{{ url_for('bom.delete', bom_id=b.bom_id) }}"
+            onsubmit="return confirm('Remove {{ b.bom_name }} from the active list?')">
+        <button class="link danger">Delete</button></form>
+      {% endif %}
+    </td>
+  </tr>{% endfor %}</tbody>
+</table>
+{% else %}<p class="empty">{% if q or status != 'All' %}No BoMs match this search.{% else %}No BoMs yet. Add the first one to start tracking stock.{% endif %}</p>{% endif %}
+{% endblock %}

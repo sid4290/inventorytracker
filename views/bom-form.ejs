@@ -1,0 +1,26 @@
+<%- include('partials/header', { title: mode === 'new' ? 'Add BoM' : 'Edit BoM' }) %>
+<header class="page-head"><h1><%= mode === 'new' ? 'Add BoM' : 'Edit ' + (values.bom_name || values.bom_id) %></h1></header>
+<form method="post" class="stack form-narrow" novalidate>
+  <% const err = (k) => errors[k] ? `<p class="field-error">${errors[k]}</p>` : ''; %>
+  <label>BoM ID
+    <input name="bom_id" value="<%= values.bom_id || '' %>" <%= mode === 'edit' ? 'readonly' : 'required' %> placeholder="e.g. B-1001">
+    <%- err('bom_id') %></label>
+  <label>Name <input name="bom_name" value="<%= values.bom_name || '' %>" required><%- err('bom_name') %></label>
+  <label>Category
+    <select name="category" required><option value="">Choose…</option>
+      <% for (const c of categories) { %><option <%= values.category === c ? 'selected' : '' %>><%= c %></option><% } %>
+    </select><%- err('category') %></label>
+  <label>Unit price <input name="price" type="number" step="0.01" min="0" value="<%= values.price ?? '' %>" required><%- err('price') %></label>
+  <% if (mode === 'new') { %>
+  <label>Current balance
+    <input name="balance" type="number" step="1" min="0" value="<%= values.balance ?? '' %>" required>
+    <small class="muted">Saved as the opening balance. Later changes go through stock in / out.</small><%- err('balance') %></label>
+  <% } else { %>
+  <label>Current balance <input value="<%= values.balance %>" readonly><small class="muted">Change this by recording a stock movement.</small></label>
+  <% } %>
+  <label>Safety stock level
+    <input name="safety_stock_level" type="number" step="1" min="0" value="<%= values.safety_stock_level ?? '' %>" required>
+    <small class="muted">A purchase order is generated when balance reaches this level.</small><%- err('safety_stock_level') %></label>
+  <div class="actions"><button class="primary"><%= mode === 'new' ? 'Add BoM' : 'Save changes' %></button><a class="button" href="/boms">Cancel</a></div>
+</form>
+<%- include('partials/footer') %>

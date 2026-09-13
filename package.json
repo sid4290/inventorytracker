@@ -1,0 +1,22 @@
+{
+  "name": "inventory-tracker",
+  "version": "0.1.0",
+  "description": "Inventory Tracker prototype — DPMG Group 7",
+  "main": "server.js",
+  "scripts": {
+    "start": "node --no-warnings server.js",
+    "dev": "node --no-warnings --watch server.js",
+    "test": "node --no-warnings --test test/*.test.js",
+    "seed": "node --no-warnings scripts/seed-demo.js"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "ejs": "^6.0.1",
+    "express": "^5.2.1",
+    "express-session": "^1.19.0"
+  },
+  "engines": {
+    "node": ">=22.5"
+  }
+}

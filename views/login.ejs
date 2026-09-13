@@ -1,0 +1,14 @@
+<%- include('partials/header', { title: 'Log in' }) %>
+<section class="login-card">
+  <h1>Inventory Tracker</h1>
+  <p class="muted">Log in with the account your administrator gave you.</p>
+  <% if (error) { %><p class="field-error" role="alert"><%= error %></p><% } %>
+  <form method="post" action="/login" class="stack">
+    <label>Username <input name="username" value="<%= username %>" required autofocus autocomplete="username"></label>
+    <label>Password <input name="password" type="password" required autocomplete="current-password"></label>
+    <button class="primary">Log in</button>
+  </form>
+  <details class="muted small"><summary>Demo accounts</summary>
+    <p>staff / staff123 · manager / manager123 · owner / owner123 · admin / admin123</p></details>
+</section>
+<%- include('partials/footer') %>

@@ -1,0 +1,14 @@
+<%- include('partials/header', { title: 'Low stock' }) %>
+<header class="page-head"><h1>Low stock</h1><div class="actions"><a class="button" href="/purchase-orders">Purchase orders</a></div></header>
+<% if (!items.length) { %><p class="empty">Every BoM is above its safety stock level.</p><% } else { %>
+<p class="muted">These BoMs are at or below their safety stock level and need replenishment.</p>
+<table>
+  <thead><tr><th>ID</th><th>Name</th><th>Category</th><th class="num">Balance</th><th class="num">Safety</th><th class="num">Shortfall</th><th></th></tr></thead>
+  <tbody><% for (const b of items) { %>
+    <tr><td class="mono"><%= b.bom_id %></td><td><%= b.bom_name %></td><td><%= b.category %></td>
+      <td class="num warn"><%= b.current_balance %></td><td class="num"><%= b.safety_stock_level %></td><td class="num"><%= b.shortfall %></td>
+      <td class="row-actions"><a href="/transactions?bom=<%= encodeURIComponent(b.bom_id) %>&type=IN">Receive stock</a></td></tr>
+  <% } %></tbody>
+</table>
+<% } %>
+<%- include('partials/footer') %>

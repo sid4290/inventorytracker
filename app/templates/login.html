@@ -1,0 +1,12 @@
+{% extends "base.html" %}{% block title %}Log in · Inventory Tracker{% endblock %}
+{% block content %}
+<section class="login">
+  <h1>Inventory Tracker</h1>
+  <p class="lead">Log in to manage BoMs, record stock movements and review purchase orders.</p>
+  <form method="post" class="stack">
+    <label>Username <input name="username" autocomplete="username" required autofocus></label>
+    <label>Password <input name="password" type="password" autocomplete="current-password" required></label>
+    <button class="primary">Log in</button>
+  </form>
+</section>
+{% endblock %}

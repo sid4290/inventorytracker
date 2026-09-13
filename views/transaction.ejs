@@ -1,0 +1,26 @@
+<%- include('partials/header', { title: 'Stock in / out' }) %>
+<header class="page-head"><h1>Stock in / out</h1></header>
+<div class="two-col">
+<form method="post" action="/transactions" class="stack form-narrow" novalidate>
+  <% if (error) { %><p class="field-error" role="alert"><%= error %></p><% } %>
+  <label>BoM
+    <select name="bom_id" required id="bom">
+      <option value="">Choose…</option>
+      <% for (const b of boms) { %><option value="<%= b.bom_id %>" data-balance="<%= b.current_balance %>" <%= values.bom_id === b.bom_id ? 'selected' : '' %>><%= b.bom_name %> (<%= b.bom_id %>) — balance <%= b.current_balance %></option><% } %>
+    </select></label>
+  <fieldset class="segmented"><legend>Type</legend>
+    <label><input type="radio" name="txn_type" value="IN" <%= values.txn_type !== 'OUT' ? 'checked' : '' %>> Stock in</label>
+    <label><input type="radio" name="txn_type" value="OUT" <%= values.txn_type === 'OUT' ? 'checked' : '' %>> Stock out</label>
+  </fieldset>
+  <label>Quantity <input name="quantity" type="number" step="1" min="1" value="<%= values.quantity || '' %>" required></label>
+  <div class="actions"><button class="primary">Record</button></div>
+</form>
+<section>
+  <h2>Recent transactions</h2>
+  <% if (!recent.length) { %><p class="empty">Nothing recorded yet.</p><% } else { %>
+  <table><thead><tr><th>When</th><th>BoM</th><th>Type</th><th class="num">Qty</th><th>By</th></tr></thead><tbody>
+    <% for (const t of recent) { %><tr><td class="muted small"><%= t.txn_date %></td><td><%= t.bom_name %></td><td><%= t.txn_type === 'IN' ? 'Stock in' : 'Stock out' %></td><td class="num"><%= t.txn_type === 'IN' ? '+' : '−' %><%= t.quantity %></td><td class="muted"><%= t.performed_by_name %></td></tr><% } %>
+  </tbody></table><% } %>
+</section>
+</div>
+<%- include('partials/footer') %>

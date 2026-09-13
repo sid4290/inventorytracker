@@ -1,0 +1,26 @@
+<%- include('partials/header', { title: 'Dashboard' }) %>
+<header class="page-head"><h1>Dashboard</h1>
+  <div class="actions"><a class="button primary" href="/boms/new">Add BoM</a><a class="button" href="/transactions">Record stock movement</a></div>
+</header>
+<section class="tiles">
+  <a class="tile" href="/boms"><span class="num"><%= summary.totalBoms %></span><span>BoMs in master list</span></a>
+  <a class="tile <%= summary.lowStock ? 'tile-warn' : '' %>" href="/low-stock"><span class="num"><%= summary.lowStock %></span><span>At or below safety stock</span></a>
+  <a class="tile" href="/purchase-orders"><span class="num"><%= summary.openPos %></span><span>Purchase orders awaiting review</span></a>
+</section>
+<div class="two-col">
+  <section>
+    <h2>Needs replenishment</h2>
+    <% if (!lowStock.length) { %><p class="empty">Every BoM is above its safety stock level.</p><% } else { %>
+    <table><thead><tr><th>BoM</th><th class="num">Balance</th><th class="num">Safety</th></tr></thead><tbody>
+      <% for (const b of lowStock) { %><tr><td><a href="/boms?q=<%= encodeURIComponent(b.bom_name) %>"><%= b.bom_name %></a> <span class="muted small"><%= b.bom_id %></span></td><td class="num warn"><%= b.current_balance %></td><td class="num"><%= b.safety_stock_level %></td></tr><% } %>
+    </tbody></table><% } %>
+  </section>
+  <section>
+    <h2>Recent transactions</h2>
+    <% if (!summary.recent.length) { %><p class="empty">No stock movements yet. <a href="/transactions">Record the first one.</a></p><% } else { %>
+    <table><thead><tr><th>When</th><th>BoM</th><th>Type</th><th class="num">Qty</th></tr></thead><tbody>
+      <% for (const t of summary.recent) { %><tr><td class="muted small"><%= t.txn_date %></td><td><%= t.bom_name %></td><td><%= t.txn_type === 'IN' ? 'Stock in' : 'Stock out' %></td><td class="num"><%= t.txn_type === 'IN' ? '+' : '−' %><%= t.quantity %></td></tr><% } %>
+    </tbody></table><% } %>
+  </section>
+</div>
+<%- include('partials/footer') %>

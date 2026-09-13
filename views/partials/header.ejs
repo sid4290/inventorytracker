@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title><%= title %> — Inventory Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<% if (user) { %>
+<aside class="sidebar">
+  <a class="brand" href="/">Inventory<br>Tracker</a>
+  <nav>
+    <a href="/" class="<%= path === '/' ? 'active' : '' %>">Dashboard</a>
+    <a href="/boms" class="<%= path.startsWith('/boms') ? 'active' : '' %>">BoM list</a>
+    <a href="/transactions" class="<%= path.startsWith('/transactions') ? 'active' : '' %>">Stock in / out</a>
+    <a href="/low-stock" class="<%= path.startsWith('/low-stock') ? 'active' : '' %>">Low stock</a>
+    <a href="/purchase-orders" class="<%= path.startsWith('/purchase-orders') ? 'active' : '' %>">Purchase orders</a>
+  </nav>
+  <div class="whoami">
+    <div><strong><%= user.username %></strong><br><span><%= user.role %></span></div>
+    <form method="post" action="/logout"><button class="link">Log out</button></form>
+  </div>
+</aside>
+<% } %>
+<main class="<%= user ? '' : 'main-solo' %>">
+<% if (flash) { %><div class="flash flash-<%= flash.type %>" role="status"><%= flash.text %></div><% } %>

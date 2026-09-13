@@ -1,0 +1,42 @@
+<%- include('partials/header', { title: 'BoM list' }) %>
+<header class="page-head"><h1>BoM list</h1><div class="actions"><a class="button primary" href="/boms/new">Add BoM</a></div></header>
+<form method="get" action="/boms" class="toolbar">
+  <input type="search" name="q" value="<%= search %>" placeholder="Search by name" aria-label="Search by name">
+  <select name="status" aria-label="Stock status">
+    <% for (const o of ['All','Available','Low Stock']) { %><option <%= status === o ? 'selected' : '' %>><%= o %></option><% } %>
+  </select>
+  <button>Apply</button>
+  <% if (search || status !== 'All') { %><a href="/boms" class="muted">Clear</a><% } %>
+</form>
+<% if (!boms.length) { %>
+  <p class="empty"><%= search || status !== 'All' ? 'No BoMs match this search.' : 'No BoMs yet. Add the first one to capture its opening balance.' %></p>
+<% } else { %>
+<table class="bom-table">
+  <thead><tr><th>ID</th><th>Name</th><th>Category</th><th class="num">Price</th><th class="num">Balance</th><th class="num">Safety</th><th>Stock level</th><th></th></tr></thead>
+  <tbody>
+  <% for (const b of boms) { const low = b.stock_status === 'Low Stock'; const pct = Math.min(100, Math.round(100 * b.current_balance / Math.max(1, b.safety_stock_level * 2))); %>
+    <tr>
+      <td class="mono"><%= b.bom_id %></td>
+      <td><%= b.bom_name %></td>
+      <td><%= b.category %></td>
+      <td class="num"><%= b.price.toFixed(2) %></td>
+      <td class="num <%= low ? 'warn' : '' %>"><%= b.current_balance %></td>
+      <td class="num"><%= b.safety_stock_level %></td>
+      <td class="level-cell" title="<%= b.stock_status %>">
+        <span class="level <%= low ? 'level-low' : 'level-ok' %>"><i style="width:<%= pct %>%"></i><b></b></span>
+        <span class="status-text <%= low ? 'warn' : 'ok' %>"><%= b.stock_status %></span>
+      </td>
+      <td class="row-actions">
+        <a href="/transactions?bom=<%= encodeURIComponent(b.bom_id) %>">Stock</a>
+        <% if (canModify) { %>
+          <a href="/boms/<%= encodeURIComponent(b.bom_id) %>/edit">Edit</a>
+          <form method="post" action="/boms/<%= encodeURIComponent(b.bom_id) %>/delete" onsubmit="return confirm('Delete <%= b.bom_name %>? Its transaction history will be removed too.')"><button class="link danger">Delete</button></form>
+        <% } %>
+      </td>
+    </tr>
+  <% } %>
+  </tbody>
+</table>
+<p class="muted small"><%= boms.length %> BoM<%= boms.length === 1 ? '' : 's' %>. The bar shows balance against twice the safety stock level; the tick marks safety stock.</p>
+<% } %>
+<%- include('partials/footer') %>

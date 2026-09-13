@@ -1,0 +1,16 @@
+{% extends "base.html" %}{% block title %}Low-stock status · Inventory Tracker{% endblock %}
+{% block content %}
+<header class="page"><h1>Low-stock status</h1></header>
+{% if boms %}
+<p class="lead">{{ boms|length }} BoM{{ 's' if boms|length != 1 }} at or below safety stock and need replenishment.</p>
+<table>
+  <thead><tr><th>ID</th><th>Name</th><th class="num">Balance</th><th class="num">Safety stock</th><th class="num">Shortfall</th><th>Purchase order</th></tr></thead>
+  <tbody>{% for b in boms %}
+  <tr class="low"><td>{{ b.bom_id }}</td><td>{{ b.bom_name }}</td>
+    <td class="num">{{ b.current_balance }}</td><td class="num">{{ b.safety_stock_level }}</td>
+    <td class="num">{{ b.safety_stock_level - b.current_balance }}</td>
+    <td>{% if b.pending_po %}<a href="{{ url_for('po.list_po', status='Generated') }}">Awaiting review</a>{% else %}Reviewed{% endif %}</td></tr>
+  {% endfor %}</tbody>
+</table>
+{% else %}<p class="empty">All BoMs are above their safety stock level.</p>{% endif %}
+{% endblock %}

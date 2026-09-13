@@ -1,0 +1,23 @@
+{% extends "base.html" %}{% block title %}Purchase orders · Inventory Tracker{% endblock %}
+{% block content %}
+<header class="page"><h1>Purchase orders</h1></header>
+<form method="get" class="filters">
+  <select name="status" aria-label="PO status">
+    {% for s in ['All', 'Generated', 'Reviewed'] %}<option {{ 'selected' if s == status }}>{{ s }}</option>{% endfor %}
+  </select>
+  <button>Apply</button>
+</form>
+{% if pos %}
+<table>
+  <thead><tr><th>PO</th><th>BoM</th><th class="num">Balance / safety</th><th class="num">Suggested qty</th><th>Generated</th><th>Status</th><th></th></tr></thead>
+  <tbody>{% for p in pos %}
+  <tr><td>PO-{{ p.po_id }}</td><td>{{ p.bom_id }} — {{ p.bom_name }}</td>
+    <td class="num">{{ p.current_balance }} / {{ p.safety_stock_level }}</td>
+    <td class="num">{{ p.suggested_reorder_qty }}</td><td>{{ p.generated_date }}</td>
+    <td><span class="badge {{ 'warn' if p.status == 'Generated' else 'ok' }}">{{ p.status }}{% if p.reviewer %} by {{ p.reviewer }}{% endif %}</span></td>
+    <td class="row-actions">{% if p.status == 'Generated' and g.can_modify %}
+      <form method="post" action="{{ url_for('po.review', po_id=p.po_id) }}"><button class="link">Mark reviewed</button></form>{% endif %}</td></tr>
+  {% endfor %}</tbody>
+</table>
+{% else %}<p class="empty">No purchase orders. They appear automatically when a BoM reaches its safety stock level.</p>{% endif %}
+{% endblock %}

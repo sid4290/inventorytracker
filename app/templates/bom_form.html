@@ -1,0 +1,38 @@
+{% extends "base.html" %}{% block title %}{{ 'Edit' if mode == 'edit' else 'Add' }} BoM · Inventory Tracker{% endblock %}
+{% block content %}
+<header class="page"><h1>{{ 'Edit ' ~ bom.bom_name if mode == 'edit' else 'Add BoM' }}</h1></header>
+<form method="post" class="stack form" novalidate>
+  {% macro field(name, label, type='text', extra='', hint='') %}
+  <label class="{{ 'invalid' if errors.get(name) }}">{{ label }}
+    <input name="{{ name }}" type="{{ type }}" value="{{ form.get(name, '') }}" {{ extra|safe }}>
+    {% if errors.get(name) %}<em>{{ errors[name] }}</em>{% elif hint %}<small>{{ hint }}</small>{% endif %}
+  </label>
+  {% endmacro %}
+  {% if mode == 'add' %}
+    {{ field('bom_id', 'BoM ID', hint='Must be unique, e.g. BOM-006') }}
+  {% else %}
+    <label>BoM ID <input value="{{ bom.bom_id }}" disabled></label>
+  {% endif %}
+  {{ field('bom_name', 'Name') }}
+  <label class="{{ 'invalid' if errors.get('category') }}">Category
+    <select name="category">
+      <option value="">Choose…</option>
+      {% for c in categories %}<option {{ 'selected' if form.get('category') == c }}>{{ c }}</option>{% endfor %}
+    </select>
+    {% if errors.get('category') %}<em>{{ errors['category'] }}</em>{% endif %}
+  </label>
+  {{ field('price', 'Unit price', 'number', 'step="0.01" min="0"') }}
+  {% if mode == 'add' %}
+    {{ field('current_balance', 'Current balance', 'number', 'min="0" step="1"', 'Saved as the opening balance on first entry.') }}
+  {% else %}
+    <label>Current balance <input value="{{ bom.current_balance }}" disabled>
+      <small>Balances change only through stock transactions. Opening balance was {{ bom.opening_balance }}.</small></label>
+  {% endif %}
+  {{ field('safety_stock_level', 'Safety stock level', 'number', 'min="0" step="1"', 'A purchase order is generated when balance reaches this level.') }}
+  {{ field('reorder_qty', 'Reorder quantity', 'number', 'min="1" step="1"', 'Leave blank to use twice the safety stock level.') }}
+  <div class="actions">
+    <button class="primary">{{ 'Save changes' if mode == 'edit' else 'Add BoM' }}</button>
+    <a class="button" href="{{ url_for('bom.list_bom') }}">Cancel</a>
+  </div>
+</form>
+{% endblock %}

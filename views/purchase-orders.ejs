@@ -1,0 +1,18 @@
+<%- include('partials/header', { title: 'Purchase orders' }) %>
+<header class="page-head"><h1>Purchase orders</h1></header>
+<% if (!orders.length) { %><p class="empty">No purchase orders. One is generated automatically when a BoM reaches its safety stock level.</p><% } else { %>
+<table>
+  <thead><tr><th>PO</th><th>BoM</th><th class="num">Balance</th><th class="num">Safety</th><th class="num">Suggested qty</th><th>Generated</th><th>Status</th><th></th></tr></thead>
+  <tbody><% for (const p of orders) { %>
+    <tr class="<%= p.status === 'Reviewed' ? 'muted' : '' %>">
+      <td class="mono">PO-<%= p.po_id %></td><td><%= p.bom_name %> <span class="muted small"><%= p.bom_id %></span></td>
+      <td class="num"><%= p.current_balance %></td><td class="num"><%= p.safety_stock_level %></td><td class="num"><%= p.suggested_reorder_qty %></td>
+      <td class="small"><%= p.generated_date %></td>
+      <td><span class="pill <%= p.status === 'Generated' ? 'pill-warn' : 'pill-ok' %>"><%= p.status %><%= p.reviewed_by_name ? ' by ' + p.reviewed_by_name : '' %></span></td>
+      <td class="row-actions"><% if (p.status === 'Generated' && canModify) { %>
+        <form method="post" action="/purchase-orders/<%= p.po_id %>/review"><button class="link">Mark reviewed</button></form><% } %></td>
+    </tr>
+  <% } %></tbody>
+</table>
+<% } %>
+<%- include('partials/footer') %>
