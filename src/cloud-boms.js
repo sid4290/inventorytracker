@@ -24,35 +24,27 @@ function withStatus(row) {
 async function initialize() {
   const client = connection();
   if (!client) return;
-  initialized ||= client.query(`
-    CREATE TABLE IF NOT EXISTS inventory_bom (
-      bom_id TEXT PRIMARY KEY,
-      bom_name TEXT NOT NULL,
-      category TEXT NOT NULL,
+  initialized ||= (async () => {
+    await client.query(`CREATE TABLE IF NOT EXISTS inventory_bom (
+      bom_id TEXT PRIMARY KEY, bom_name TEXT NOT NULL, category TEXT NOT NULL,
       price NUMERIC NOT NULL CHECK (price >= 0),
       opening_balance INTEGER NOT NULL CHECK (opening_balance >= 0),
       current_balance INTEGER NOT NULL CHECK (current_balance >= 0),
       safety_stock_level INTEGER NOT NULL CHECK (safety_stock_level >= 0),
-      created_by INTEGER NOT NULL,
-      created_date TIMESTAMPTZ NOT NULL DEFAULT NOW()
-    );
-    CREATE TABLE IF NOT EXISTS inventory_transaction (
-      txn_id SERIAL PRIMARY KEY,
-      bom_id TEXT NOT NULL REFERENCES inventory_bom(bom_id) ON DELETE CASCADE,
-      txn_type TEXT NOT NULL CHECK (txn_type IN ('IN', 'OUT')),
-      quantity INTEGER NOT NULL CHECK (quantity > 0),
-      txn_date TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-      performed_by INTEGER NOT NULL
-    );
-    CREATE TABLE IF NOT EXISTS inventory_purchase_order (
-      po_id SERIAL PRIMARY KEY,
-      bom_id TEXT NOT NULL REFERENCES inventory_bom(bom_id) ON DELETE CASCADE,
+      created_by INTEGER NOT NULL, created_date TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )`);
+    await client.query(`CREATE TABLE IF NOT EXISTS inventory_transaction (
+      txn_id SERIAL PRIMARY KEY, bom_id TEXT NOT NULL REFERENCES inventory_bom(bom_id) ON DELETE CASCADE,
+      txn_type TEXT NOT NULL CHECK (txn_type IN ('IN', 'OUT')), quantity INTEGER NOT NULL CHECK (quantity > 0),
+      txn_date TIMESTAMPTZ NOT NULL DEFAULT NOW(), performed_by INTEGER NOT NULL
+    )`);
+    await client.query(`CREATE TABLE IF NOT EXISTS inventory_purchase_order (
+      po_id SERIAL PRIMARY KEY, bom_id TEXT NOT NULL REFERENCES inventory_bom(bom_id) ON DELETE CASCADE,
       suggested_reorder_qty INTEGER NOT NULL CHECK (suggested_reorder_qty > 0),
       status TEXT NOT NULL DEFAULT 'Generated' CHECK (status IN ('Generated', 'Reviewed')),
-      generated_date TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-      reviewed_by INTEGER
-    )
-  `).catch((error) => {
+      generated_date TIMESTAMPTZ NOT NULL DEFAULT NOW(), reviewed_by INTEGER
+    )`);
+  })().catch((error) => {
     initialized = undefined;
     throw error;
   });
