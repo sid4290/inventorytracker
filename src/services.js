@@ -75,7 +75,7 @@ function getBom(db, bomId) {
 function listBoms(db, { search = '', status = 'All' } = {}) {
   const where = [];
   const params = [];
-  if (search.trim()) { where.push('bom_name LIKE ?'); params.push(`%${search.trim()}%`); }          // FR12
+  if (search.trim()) { where.push('(bom_name LIKE ? OR bom_id LIKE ?)'); params.push(`%${search.trim()}%`, `%${search.trim()}%`); } // FR12
   if (status === 'Low Stock') where.push('current_balance <= safety_stock_level');                   // FR16
   if (status === 'Available') where.push('current_balance > safety_stock_level');
   const sql = `SELECT *, ${STOCK_STATUS_SQL} FROM BoM ${where.length ? 'WHERE ' + where.join(' AND ') : ''} ORDER BY bom_name`;

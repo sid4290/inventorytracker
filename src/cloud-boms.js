@@ -55,7 +55,7 @@ async function listBoms({ search = '', status = 'All' } = {}) {
   const values = [];
   if (search.trim()) {
     values.push(`%${search.trim()}%`);
-    clauses.push(`bom_name ILIKE $${values.length}`);
+    clauses.push(`(bom_name ILIKE $${values.length} OR bom_id ILIKE $${values.length})`);
   }
   if (status === 'Low Stock') clauses.push('current_balance <= safety_stock_level');
   if (status === 'Available') clauses.push('current_balance > safety_stock_level');
