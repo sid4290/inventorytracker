@@ -1,6 +1,6 @@
 <%- include('partials/header', { title: 'Dashboard' }) %>
 <header class="page-head"><h1>Dashboard</h1>
-  <div class="actions"><a class="button primary add-bom-action" href="/boms/new"><strong>Add BoM</strong><small>Create a new item</small></a><a class="button" href="/boms">View BoM list</a><a class="button" href="/transactions">Record stock movement</a></div>
+  <div class="actions"><a class="button primary" href="/boms/new">Add BoM</a><a class="button" href="/boms">View BoM list</a><a class="button" href="/transactions">Record stock movement</a></div>
 </header>
 <section class="tiles">
   <a class="tile" href="/boms"><span class="num"><%= summary.totalBoms %></span><span>BoMs in master list</span></a>
