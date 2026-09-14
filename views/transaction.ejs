@@ -12,14 +12,15 @@
     <label><input type="radio" name="txn_type" value="IN" <%= values.txn_type !== 'OUT' ? 'checked' : '' %>> Stock in</label>
     <label><input type="radio" name="txn_type" value="OUT" <%= values.txn_type === 'OUT' ? 'checked' : '' %>> Stock out</label>
   </fieldset>
+  <label>Vendor <span class="muted small">(optional)</span><input name="vendor" value="<%= values.vendor || '' %>" maxlength="120" placeholder="e.g. Acme Supplies"></label>
   <label>Quantity <input name="quantity" type="number" step="1" min="1" value="<%= values.quantity || '' %>" required></label>
   <div class="actions"><button class="primary">Record</button></div>
 </form>
 <section>
   <h2>Recent transactions</h2>
   <% if (!recent.length) { %><p class="empty">Nothing recorded yet.</p><% } else { %>
-  <table><thead><tr><th>When</th><th>BoM</th><th>Type</th><th class="num">Qty</th><th>PO</th><th>By</th></tr></thead><tbody>
-    <% for (const t of recent) { %><tr><td class="muted small"><%= t.txn_date %></td><td><%= t.bom_name %></td><td><%= t.txn_type === 'IN' ? 'Stock in' : 'Stock out' %></td><td class="num"><%= t.txn_type === 'IN' ? '+' : '−' %><%= t.quantity %></td><td><%= t.purchase_order_id ? 'PO-' + t.purchase_order_id : '—' %></td><td class="muted"><%= t.performed_by_name || '' %></td></tr><% } %>
+  <table><thead><tr><th>When</th><th>BoM</th><th>Type</th><th class="num">Qty</th><th>Vendor</th><th>PO</th><th>By</th></tr></thead><tbody>
+  <% for (const t of recent) { %><tr><td class="muted small"><%= t.txn_date %></td><td><%= t.bom_name %></td><td><%= t.txn_type === 'IN' ? 'Stock in' : 'Stock out' %></td><td class="num"><%= t.txn_type === 'IN' ? '+' : '−' %><%= t.quantity %></td><td><%= t.vendor || '—' %></td><td><%= t.purchase_order_id ? 'PO-' + t.purchase_order_id : '—' %></td><td class="muted"><%= t.performed_by_name || '' %></td></tr><% } %>
   </tbody></table><% } %>
 </section>
 </div>

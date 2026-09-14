@@ -36,9 +36,12 @@ async function initialize() {
     await client.query(`CREATE TABLE IF NOT EXISTS inventory_transaction (
       txn_id SERIAL PRIMARY KEY, bom_id TEXT NOT NULL REFERENCES inventory_bom(bom_id) ON DELETE CASCADE,
       txn_type TEXT NOT NULL CHECK (txn_type IN ('IN', 'OUT')), quantity INTEGER NOT NULL CHECK (quantity > 0),
-      txn_date TIMESTAMPTZ NOT NULL DEFAULT NOW(), performed_by INTEGER NOT NULL, purchase_order_id INTEGER
+      vendor TEXT, txn_date TIMESTAMPTZ NOT NULL DEFAULT NOW(), performed_by INTEGER NOT NULL,
+      performed_by_name TEXT, purchase_order_id INTEGER
     )`);
     try { await client.query('ALTER TABLE inventory_transaction ADD COLUMN purchase_order_id INTEGER'); } catch {}
+    try { await client.query('ALTER TABLE inventory_transaction ADD COLUMN vendor TEXT'); } catch {}
+    try { await client.query('ALTER TABLE inventory_transaction ADD COLUMN performed_by_name TEXT'); } catch {}
     await client.query(`CREATE TABLE IF NOT EXISTS inventory_purchase_order (
       po_id SERIAL PRIMARY KEY, bom_id TEXT NOT NULL REFERENCES inventory_bom(bom_id) ON DELETE CASCADE,
       suggested_reorder_qty INTEGER NOT NULL CHECK (suggested_reorder_qty > 0),
@@ -121,7 +124,7 @@ async function listLowStock() {
 async function listTransactions(limit = 50) {
   await initialize();
   return connection().query(`
-    SELECT t.*, b.bom_name
+    SELECT t.*, b.bom_name, COALESCE(t.performed_by_name, 'User #' || t.performed_by) AS performed_by_name
     FROM inventory_transaction t
     JOIN inventory_bom b ON b.bom_id = t.bom_id
     ORDER BY t.txn_date DESC, t.txn_id DESC
@@ -143,7 +146,7 @@ async function maybeGeneratePurchaseOrder(bomId) {
   return rows[0];
 }
 
-async function recordTransaction({ bom_id, txn_type, quantity }, userId) {
+async function recordTransaction({ bom_id, txn_type, quantity, vendor }, userId, userName) {
   await initialize();
   const qty = Number(quantity);
   if (!['IN', 'OUT'].includes(txn_type)) throw new Error('Choose stock-in or stock-out');
@@ -157,8 +160,8 @@ async function recordTransaction({ bom_id, txn_type, quantity }, userId) {
     : [];
   await connection().query('UPDATE inventory_bom SET current_balance = current_balance + $1 WHERE bom_id = $2', [delta, bom_id]);
   await connection().query(
-    'INSERT INTO inventory_transaction (bom_id, txn_type, quantity, performed_by, purchase_order_id) VALUES ($1, $2, $3, $4, $5)',
-    [bom_id, txn_type, qty, userId, openPo[0]?.po_id || null]
+    'INSERT INTO inventory_transaction (bom_id, txn_type, quantity, vendor, performed_by, performed_by_name, purchase_order_id) VALUES ($1, $2, $3, $4, $5, $6, $7)',
+    [bom_id, txn_type, qty, String(vendor || '').trim() || null, userId, userName || null, openPo[0]?.po_id || null]
   );
   const purchaseOrder = await maybeGeneratePurchaseOrder(bom_id);
   return { bom: await getBom(bom_id), purchaseOrder, receivedAgainst: openPo[0] || null };

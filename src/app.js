@@ -142,7 +142,7 @@ function createApp(db) {
   app.post('/transactions', async (req, res) => {
     try {
       const { bom, purchaseOrder, receivedAgainst } = useCloudBoms
-        ? await cloudBoms.recordTransaction(req.body, req.session.user.user_id)
+        ? await cloudBoms.recordTransaction(req.body, req.session.user.user_id, req.session.user.username)
         : s.recordTransaction(db, req.body, req.session.user.user_id);
       const verb = req.body.txn_type === 'IN' ? 'Received' : 'Issued';
       let text = `${verb} ${req.body.quantity} × ${bom.bom_name}. Balance is now ${bom.current_balance}.`;

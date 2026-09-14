@@ -37,6 +37,7 @@ const SCHEMA = `
     bom_id       TEXT NOT NULL REFERENCES BoM(bom_id) ON DELETE CASCADE,
     txn_type     TEXT NOT NULL CHECK (txn_type IN ('IN','OUT')),
     quantity     INTEGER NOT NULL CHECK (quantity > 0),
+    vendor       TEXT,
     txn_date     TEXT NOT NULL DEFAULT (datetime('now')),
     performed_by INTEGER NOT NULL REFERENCES User(user_id),
     purchase_order_id INTEGER REFERENCES PurchaseOrder(po_id)
@@ -69,6 +70,7 @@ function openDatabase(file = process.env.DB_FILE || path.join(__dirname, '..', '
   const db = new DatabaseSync(file);
   db.exec(SCHEMA);
   try { db.exec('ALTER TABLE StockTransaction ADD COLUMN purchase_order_id INTEGER REFERENCES PurchaseOrder(po_id)'); } catch {}
+  try { db.exec('ALTER TABLE StockTransaction ADD COLUMN vendor TEXT'); } catch {}
   seedUsers(db);
   return db;
 }

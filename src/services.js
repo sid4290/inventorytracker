@@ -88,7 +88,7 @@ function listLowStock(db) {                                                     
 }
 
 // ---------- INV-LOG-03: stock transaction engine ----------
-function recordTransaction(db, { bom_id, txn_type, quantity }, userId) {
+function recordTransaction(db, { bom_id, txn_type, quantity, vendor }, userId) {
   const qty = Number(quantity);
   if (!['IN', 'OUT'].includes(txn_type)) throw new ValidationError('Choose stock-in or stock-out');
   if (!Number.isInteger(qty) || qty <= 0) throw new ValidationError('Quantity must be a whole number greater than 0');
@@ -106,8 +106,8 @@ function recordTransaction(db, { bom_id, txn_type, quantity }, userId) {
       ? db.prepare("SELECT po_id FROM PurchaseOrder WHERE bom_id = ? AND status = 'Generated' ORDER BY po_id LIMIT 1").get(bom_id)
       : null;
     db.prepare('UPDATE BoM SET current_balance = current_balance + ? WHERE bom_id = ?').run(delta, bom_id); // FR8 / FR9
-    db.prepare('INSERT INTO StockTransaction (bom_id, txn_type, quantity, performed_by, purchase_order_id) VALUES (?, ?, ?, ?, ?)')
-      .run(bom_id, txn_type, qty, userId, openPo?.po_id || null);
+    db.prepare('INSERT INTO StockTransaction (bom_id, txn_type, quantity, vendor, performed_by, purchase_order_id) VALUES (?, ?, ?, ?, ?, ?)')
+      .run(bom_id, txn_type, qty, String(vendor || '').trim() || null, userId, openPo?.po_id || null);
     const po = maybeGeneratePurchaseOrder(db, bom_id);
     db.exec('COMMIT');
     return { bom: getBom(db, bom_id), purchaseOrder: po };

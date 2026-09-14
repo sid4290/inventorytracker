@@ -120,12 +120,14 @@ tr.muted td { color: var(--ink-soft); }
                     radial-gradient(circle at 12% 82%, rgba(43, 83, 100, .12), transparent 28rem);
   color-scheme: dark;
 }
+.app-page { color: var(--ink); }
 .app-page main { background: transparent; }
 .app-page .page-head h1,
 .app-page h2 {
   color: #f8fcfa !important;
   text-shadow: 0 1px 10px rgba(121, 221, 200, .18);
 }
+.app-page label, .app-page legend { color: #f5fbf8; }
 .app-page th { background: #1b2a2f; color: #d0ddda; }
 .app-page td { color: #edf5f2; }
 .app-page .muted, .app-page .small { color: #c0cfcc; }
@@ -152,12 +154,12 @@ tr.muted td { color: var(--ink-soft); }
 .dashboard-page .tile:hover { border-color: #55706e; box-shadow: 0 16px 34px rgba(0, 0, 0, .3); }
 .dashboard-page .tile-warn { background: var(--warn-bg); border-color: #75572f; }
 .dashboard-page .empty { background: rgba(21, 33, 38, .72); }
-.dashboard-page .page-head .primary:hover {
+.app-page .page-head .primary:hover {
   background: var(--action);
   border-color: var(--action);
   color: #0d1519;
 }
-.dashboard-page .page-head .primary {
+.app-page .page-head .primary {
   color: #0d1519;
   font: inherit;
   font-weight: 400;
