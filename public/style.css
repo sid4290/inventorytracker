@@ -105,23 +105,32 @@ tr.muted td { color: var(--ink-soft); }
 /* dashboard */
 .dashboard-page {
   --paper: #0d1519;
-  --ink: #edf5f2;
-  --ink-soft: #9aabad;
-  --line: #2b3b3f;
+  --ink: #f5fbf8;
+  --ink-soft: #c0cfcc;
+  --line: #3b4e52;
   --panel: #152126;
-  --action: #61c5b2;
-  --ok: #72d39e;
-  --warn: #f0b45f;
+  --action: #79ddc8;
+  --ok: #83e0aa;
+  --warn: #ffc873;
   --warn-bg: #33291d;
   --ok-bg: #193027;
-  --danger: #f18b82;
+  --danger: #ffaaa2;
   background: var(--paper);
   background-image: radial-gradient(circle at 78% 8%, rgba(61, 132, 126, .16), transparent 32rem),
                     radial-gradient(circle at 12% 82%, rgba(43, 83, 100, .12), transparent 28rem);
   color-scheme: dark;
 }
 .dashboard-page main { background: transparent; }
-.dashboard-page th { background: #1b2a2f; color: #b7c5c5; }
+.dashboard-page .page-head h1,
+.dashboard-page .two-col h2 {
+  color: #f8fcfa !important;
+  text-shadow: 0 1px 10px rgba(121, 221, 200, .18);
+}
+.dashboard-page th { background: #1b2a2f; color: #d0ddda; }
+.dashboard-page td { color: #edf5f2; }
+.dashboard-page .muted { color: #c0cfcc; }
+.dashboard-page .small { color: #c0cfcc; }
+.dashboard-page a { color: var(--action); }
 .dashboard-page .tile {
   background: rgba(21, 33, 38, .9);
   border-color: var(--line);
