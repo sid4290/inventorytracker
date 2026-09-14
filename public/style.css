@@ -157,6 +157,7 @@ tr.muted td { color: var(--ink-soft); }
   border-color: var(--action);
 }
 .dashboard-page .add-bom-action { display: inline-flex; flex-direction: column; gap: .05rem; line-height: 1.15; }
+.dashboard-page .add-bom-action strong { font-size: inherit; font-weight: 400; }
 .dashboard-page .add-bom-action small { color: rgba(255, 255, 255, .9); font-size: .72rem; font-weight: 500; }
 
 .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.6rem; }
