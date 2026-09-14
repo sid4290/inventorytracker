@@ -155,6 +155,12 @@ tr.muted td { color: var(--ink-soft); }
 .dashboard-page .page-head .primary:hover {
   background: var(--action);
   border-color: var(--action);
+  color: #0d1519;
+}
+.dashboard-page .page-head .primary {
+  color: #0d1519;
+  font: inherit;
+  font-weight: 400;
 }
 
 .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.6rem; }
