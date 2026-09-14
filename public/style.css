@@ -194,7 +194,7 @@ tr.muted td { color: var(--ink-soft); }
 .login-card { color: #111b1d; }
 .login-form-brand { color: #111b1d; font-size: 1.2rem; font-weight: 700; letter-spacing: -.02em; margin-bottom: -.7rem; }
 .login-heading h2 { font-size: 1.65rem; margin: .45rem 0 .35rem; }
-.login-heading h2, .login-heading p, .login-card .eyebrow { color: #111b1d; }
+.login-heading h2, .login-heading p, .login-card .eyebrow { color: #111b1d !important; }
 .login-heading p { margin: 0; }
 .login-form { gap: 1.15rem; }
 .login-form label { color: #111b1d; font-size: .85rem; }
