@@ -152,6 +152,10 @@ tr.muted td { color: var(--ink-soft); }
 .dashboard-page .tile:hover { border-color: #55706e; box-shadow: 0 16px 34px rgba(0, 0, 0, .3); }
 .dashboard-page .tile-warn { background: var(--warn-bg); border-color: #75572f; }
 .dashboard-page .empty { background: rgba(21, 33, 38, .72); }
+.dashboard-page .page-head .primary:hover {
+  background: var(--action);
+  border-color: var(--action);
+}
 
 .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.6rem; }
 .tile { background: color-mix(in srgb, var(--panel) 90%, transparent); border: 1px solid var(--line); border-radius: 8px; padding: 1rem 1.1rem; text-decoration: none; color: var(--ink); display: flex; flex-direction: column; gap: .2rem; box-shadow: 0 8px 24px rgba(27,36,48,.05); transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease; }
