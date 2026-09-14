@@ -44,7 +44,7 @@ function createApp(db) {
 
   const requireLogin = (req, res, next) => (req.session.user ? next() : res.redirect('/login'));
   const requireModifier = (req, res, next) => {
-    if (res.locals.canModify) return next();
+    if (req.session.user && s.canModifyBom(req.session.user.role)) return next();
     flash(req, 'error', 'Only an Inventory Manager or System Administrator can do that.');
     res.redirect('/boms');
   };

@@ -11,7 +11,7 @@
 <script src="/echo-text.js" defer></script>
 <script src="/login.js" defer></script>
 </head>
-<body>
+<body class="<%= path === '/' ? 'dashboard-page' : '' %>">
 <canvas class="antigravity" aria-hidden="true"></canvas>
 <% if (user) { %>
 <aside class="sidebar">
