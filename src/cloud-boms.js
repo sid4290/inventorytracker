@@ -170,7 +170,10 @@ async function recordTransaction({ bom_id, txn_type, quantity, vendor }, userId,
 async function listPurchaseOrders() {
   await initialize();
   return connection().query(`
-    SELECT p.*, b.bom_name, b.current_balance, b.safety_stock_level
+    SELECT p.*, b.bom_name, b.current_balance, b.safety_stock_level,
+      (SELECT st.vendor FROM inventory_transaction st
+       WHERE st.purchase_order_id = p.po_id AND st.txn_type = 'IN'
+       ORDER BY st.txn_id DESC LIMIT 1) AS received_vendor
     FROM inventory_purchase_order p
     JOIN inventory_bom b ON b.bom_id = p.bom_id
     ORDER BY CASE p.status WHEN 'Generated' THEN 0 ELSE 1 END, p.generated_date DESC`);

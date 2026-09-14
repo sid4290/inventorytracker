@@ -137,7 +137,10 @@ function maybeGeneratePurchaseOrder(db, bomId) {
 }
 
 function listPurchaseOrders(db) {
-  return db.prepare(`SELECT p.*, b.bom_name, b.current_balance, b.safety_stock_level, u.username AS reviewed_by_name
+  return db.prepare(`SELECT p.*, b.bom_name, b.current_balance, b.safety_stock_level, u.username AS reviewed_by_name,
+                     (SELECT st.vendor FROM StockTransaction st
+                      WHERE st.purchase_order_id = p.po_id AND st.txn_type = 'IN'
+                      ORDER BY st.txn_id DESC LIMIT 1) AS received_vendor
                      FROM PurchaseOrder p JOIN BoM b ON b.bom_id = p.bom_id LEFT JOIN User u ON u.user_id = p.reviewed_by
                      ORDER BY CASE p.status WHEN 'Generated' THEN 0 ELSE 1 END, p.generated_date DESC`).all();
 }
