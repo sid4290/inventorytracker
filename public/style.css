@@ -103,7 +103,7 @@ tr.muted td { color: var(--ink-soft); }
 .status-text { display: block; font-size: .78rem; margin-top: .25rem; font-weight: 600; }
 
 /* dashboard */
-.dashboard-page {
+.app-page {
   --paper: #0d1519;
   --ink: #f5fbf8;
   --ink-soft: #c0cfcc;
@@ -120,17 +120,30 @@ tr.muted td { color: var(--ink-soft); }
                     radial-gradient(circle at 12% 82%, rgba(43, 83, 100, .12), transparent 28rem);
   color-scheme: dark;
 }
-.dashboard-page main { background: transparent; }
-.dashboard-page .page-head h1,
-.dashboard-page .two-col h2 {
+.app-page main { background: transparent; }
+.app-page .page-head h1,
+.app-page h2 {
   color: #f8fcfa !important;
   text-shadow: 0 1px 10px rgba(121, 221, 200, .18);
 }
-.dashboard-page th { background: #1b2a2f; color: #d0ddda; }
-.dashboard-page td { color: #edf5f2; }
-.dashboard-page .muted { color: #c0cfcc; }
-.dashboard-page .small { color: #c0cfcc; }
-.dashboard-page a { color: var(--action); }
+.app-page th { background: #1b2a2f; color: #d0ddda; }
+.app-page td { color: #edf5f2; }
+.app-page .muted, .app-page .small { color: #c0cfcc; }
+.app-page a { color: var(--action); }
+.app-page table { background: #152126; }
+.app-page input, .app-page select, .app-page button:not(.primary), .app-page .button:not(.primary) {
+  background: #152126;
+  color: #f5fbf8;
+  border-color: #3b4e52;
+}
+.app-page input::placeholder { color: #9fb0ad; }
+.app-page input[readonly] { background: #202f33; color: #c0cfcc; }
+.app-page .empty { color: #c0cfcc; }
+.app-page .flash-ok { background: #193027; border-color: #387255; color: #b8f0ca; }
+.app-page .flash-warn { background: #33291d; border-color: #80602f; color: #ffd590; }
+.app-page .flash-error { background: #382321; border-color: #8c4c47; color: #ffb8b0; }
+.app-page .level { background: #2a3a3c; }
+.app-page .level b { background: #dce9e5; }
 .dashboard-page .tile {
   background: rgba(21, 33, 38, .9);
   border-color: var(--line);
@@ -138,8 +151,6 @@ tr.muted td { color: var(--ink-soft); }
 }
 .dashboard-page .tile:hover { border-color: #55706e; box-shadow: 0 16px 34px rgba(0, 0, 0, .3); }
 .dashboard-page .tile-warn { background: var(--warn-bg); border-color: #75572f; }
-.dashboard-page .level { background: #2a3a3c; }
-.dashboard-page .level b { background: #dce9e5; }
 .dashboard-page .empty { background: rgba(21, 33, 38, .72); }
 
 .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.6rem; }
