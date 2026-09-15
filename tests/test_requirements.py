@@ -152,31 +152,31 @@ def test_INV_FR_08_stock_in_increases_balance(client, app):
 
 def test_INV_FR_09_stock_out_decreases_balance(client, app):
     login(client, "staff", "staff123")
-    client.post("/transactions/", data={"bom_id": "BOM-001", "txn_type": "OUT", "quantity": "20", "receiver": "Line 2"})
+    client.post("/transactions/", data={"bom_id": "BOM-001", "txn_type": "OUT", "quantity": "20", "receiver": "Line 2", "po": "PO-220"})
     assert balance(app, "BOM-001") == 100
 
 
 def test_INV_FR_XX_stock_in_and_out_record_party_details(client, app):
     login(client, "staff", "staff123")
     client.post("/transactions/", data={"bom_id": "BOM-001", "txn_type": "IN", "quantity": "10", "vendor": "Acme Supplies"})
-    client.post("/transactions/", data={"bom_id": "BOM-001", "txn_type": "OUT", "quantity": "5", "receiver": "Assembly Line A"})
+    client.post("/transactions/", data={"bom_id": "BOM-001", "txn_type": "OUT", "quantity": "5", "receiver": "Assembly Line A", "po": "PO-AL-09"})
     with app.app_context():
         rows = get_db().execute(
-            "SELECT txn_type, vendor, receiver FROM stock_transaction WHERE bom_id='BOM-001' ORDER BY txn_id DESC LIMIT 2"
+            "SELECT txn_type, vendor, receiver, po FROM stock_transaction WHERE bom_id='BOM-001' ORDER BY txn_id DESC LIMIT 2"
         ).fetchall()
-    assert rows[0]["txn_type"] == "OUT" and rows[0]["receiver"] == "Assembly Line A"
+    assert rows[0]["txn_type"] == "OUT" and rows[0]["receiver"] == "Assembly Line A" and rows[0]["po"] == "PO-AL-09"
     assert rows[1]["txn_type"] == "IN" and rows[1]["vendor"] == "Acme Supplies"
 
 
 def test_INV_FR_10a_stock_out_over_balance_rejected(client, app):
     login(client, "staff", "staff123")
-    r = client.post("/transactions/", data={"bom_id": "BOM-001", "txn_type": "OUT", "quantity": "121", "receiver": "Line 9"})
+    r = client.post("/transactions/", data={"bom_id": "BOM-001", "txn_type": "OUT", "quantity": "121", "receiver": "Line 9", "po": "PO-121"})
     assert r.status_code == 400 and balance(app, "BOM-001") == 120     # NFR-07 boundary: balance+1
 
 
 def test_INV_NFR_07_stock_out_equal_to_balance_allowed(client, app):
     login(client, "staff", "staff123")
-    client.post("/transactions/", data={"bom_id": "BOM-001", "txn_type": "OUT", "quantity": "120", "receiver": "Line 9"})
+    client.post("/transactions/", data={"bom_id": "BOM-001", "txn_type": "OUT", "quantity": "120", "receiver": "Line 9", "po": "PO-120"})
     assert balance(app, "BOM-001") == 0
 
 
@@ -208,7 +208,7 @@ def test_INV_FR_18_auto_po_generated_when_balance_reaches_safety_stock(client, a
     login(client, "staff", "staff123")
     with app.app_context():
         assert get_db().execute("SELECT 1 FROM purchase_order WHERE bom_id='BOM-001'").fetchone() is None
-    r = client.post("/transactions/", data={"bom_id": "BOM-001", "txn_type": "OUT", "quantity": "90", "receiver": "Warehouse"},
+    r = client.post("/transactions/", data={"bom_id": "BOM-001", "txn_type": "OUT", "quantity": "90", "receiver": "Warehouse", "po": "PO-90"},
                     follow_redirects=True)
     assert b"purchase order" in r.data
     with app.app_context():
@@ -218,7 +218,7 @@ def test_INV_FR_18_auto_po_generated_when_balance_reaches_safety_stock(client, a
 
 def test_INV_FR_18_no_duplicate_po_while_one_is_pending(client, app):
     login(client, "staff", "staff123")
-    client.post("/transactions/", data={"bom_id": "BOM-002", "txn_type": "OUT", "quantity": "5"})
+    client.post("/transactions/", data={"bom_id": "BOM-002", "txn_type": "OUT", "quantity": "5", "receiver": "Line B", "po": "PO-B-5"})
     with app.app_context():
         n = get_db().execute("SELECT COUNT(*) FROM purchase_order WHERE bom_id='BOM-002'").fetchone()[0]
     assert n == 1

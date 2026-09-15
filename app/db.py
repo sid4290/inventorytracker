@@ -40,6 +40,7 @@ CREATE TABLE IF NOT EXISTS stock_transaction (
     quantity     INTEGER NOT NULL CHECK (quantity > 0),
     vendor       TEXT,
     receiver     TEXT,
+    po           TEXT,
     txn_date     TEXT    NOT NULL,
     performed_by INTEGER REFERENCES users(user_id)
 );
@@ -84,6 +85,7 @@ def init_db():
     for column_sql, column_name in (
         ("ALTER TABLE stock_transaction ADD COLUMN vendor TEXT", "vendor"),
         ("ALTER TABLE stock_transaction ADD COLUMN receiver TEXT", "receiver"),
+        ("ALTER TABLE stock_transaction ADD COLUMN po TEXT", "po"),
     ):
         try:
             db.execute(column_sql)

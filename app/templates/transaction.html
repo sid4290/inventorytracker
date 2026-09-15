@@ -22,6 +22,9 @@
   <div id="receiverField" {% if txn_type != 'OUT' %}hidden{% endif %}>
     <label>Receiver <input name="receiver" value="{{ form.get('receiver', '') }}" {{ 'required' if txn_type == 'OUT' else '' }}></label>
   </div>
+  <div id="poField" {% if txn_type != 'OUT' %}hidden{% endif %}>
+    <label>PO <input name="po" value="{{ form.get('po', '') }}" {{ 'required' if txn_type == 'OUT' else '' }}></label>
+  </div>
 
   <div class="actions">
     <button class="primary">Record transaction</button>
@@ -32,16 +35,20 @@
   const txnTypeInputs = document.querySelectorAll('input[name="txn_type"]');
   const vendorField = document.getElementById('vendorField');
   const receiverField = document.getElementById('receiverField');
+  const poField = document.getElementById('poField');
   const vendorInput = vendorField.querySelector('input');
   const receiverInput = receiverField.querySelector('input');
+  const poInput = poField.querySelector('input');
 
   function syncTxnFields() {
     const type = document.querySelector('input[name="txn_type"]:checked')?.value || 'IN';
     const isIn = type === 'IN';
     vendorField.hidden = !isIn;
     receiverField.hidden = isIn;
+    poField.hidden = isIn;
     vendorInput.required = isIn;
     receiverInput.required = !isIn;
+    poInput.required = !isIn;
   }
 
   txnTypeInputs.forEach((input) => input.addEventListener('change', syncTxnFields));
