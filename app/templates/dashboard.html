@@ -5,6 +5,7 @@
   <a class="tile" href="{{ url_for('bom.list_bom') }}"><strong>{{ total }}</strong><span>BoMs in stock list</span></a>
   <a class="tile {{ 'warn' if low }}" href="{{ url_for('dashboard.low_stock') }}"><strong>{{ low }}</strong><span>at or below safety stock</span></a>
   <a class="tile" href="{{ url_for('po.list_po', status='Generated') }}"><strong>{{ pending_po }}</strong><span>purchase orders awaiting review</span></a>
+  <div class="tile"><strong>{{ '%.2f'|format(carrying_cost) }}</strong><span>Monthly carrying cost</span></div>
 </div>
 <div class="actions">
   <a class="button primary" href="{{ url_for('txn.new') }}">Record stock movement</a>

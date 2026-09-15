@@ -38,6 +38,8 @@ CREATE TABLE IF NOT EXISTS stock_transaction (
     bom_id       TEXT    NOT NULL REFERENCES bom(bom_id),
     txn_type     TEXT    NOT NULL CHECK (txn_type IN ('IN', 'OUT')),
     quantity     INTEGER NOT NULL CHECK (quantity > 0),
+    vendor       TEXT,
+    receiver     TEXT,
     txn_date     TEXT    NOT NULL,
     performed_by INTEGER REFERENCES users(user_id)
 );
@@ -79,6 +81,14 @@ def close_db(_exc=None):
 def init_db():
     db = get_db()
     db.executescript(SCHEMA)
+    for column_sql, column_name in (
+        ("ALTER TABLE stock_transaction ADD COLUMN vendor TEXT", "vendor"),
+        ("ALTER TABLE stock_transaction ADD COLUMN receiver TEXT", "receiver"),
+    ):
+        try:
+            db.execute(column_sql)
+        except sqlite3.OperationalError:
+            pass
     db.commit()
 
 

@@ -20,7 +20,7 @@ class TransactionError(ValueError):
     pass
 
 
-def record_transaction(db, bom_id, txn_type, quantity, user_id):
+def record_transaction(db, bom_id, txn_type, quantity, user_id, vendor=None, receiver=None):
     """Apply a stock movement. Raises TransactionError; commits on success."""
     if txn_type not in ("IN", "OUT"):
         raise TransactionError("Choose Stock In or Stock Out.")
@@ -33,11 +33,21 @@ def record_transaction(db, bom_id, txn_type, quantity, user_id):
         raise TransactionError(
             f"Only {bom['current_balance']} of {bom['bom_name']} in stock; can't issue {quantity}.")
 
+    vendor = (vendor or "").strip() if vendor is not None else ""
+    receiver = (receiver or "").strip() if receiver is not None else ""
+    if txn_type == "IN" and not vendor:
+        vendor = "Unknown vendor"
+    if txn_type == "OUT" and not receiver:
+        receiver = "Unknown receiver"
+
     delta = quantity if txn_type == "IN" else -quantity
     try:
         db.execute("BEGIN")
-        db.execute("INSERT INTO stock_transaction (bom_id, txn_type, quantity, txn_date, performed_by) "
-                   "VALUES (?, ?, ?, ?, ?)", (bom_id, txn_type, quantity, now(), user_id))
+        db.execute(
+            "INSERT INTO stock_transaction (bom_id, txn_type, quantity, vendor, receiver, txn_date, performed_by) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?)",
+            (bom_id, txn_type, quantity, vendor or None, receiver or None, now(), user_id),
+        )
         db.execute("UPDATE bom SET current_balance = current_balance + ? WHERE bom_id = ?",
                    (delta, bom_id))                                            # NFR7 CHECK guards here
         po_id = ensure_purchase_order(db, bom_id)                              # auto-PO
@@ -58,12 +68,22 @@ def new():
     if request.method == "POST":
         bom_id = request.form.get("bom_id", "")
         txn_type = request.form.get("txn_type", "")
+        vendor = request.form.get("vendor", "").strip()
+        receiver = request.form.get("receiver", "").strip()
         try:
             quantity = int(request.form.get("quantity", "").strip())
         except ValueError:
             quantity = 0
+        if txn_type == "IN" and not vendor:
+            flash("Enter the vendor for stock in.", "error")
+            return render_template("transaction.html", boms=boms, form=request.form), 400
+        if txn_type == "OUT" and not receiver:
+            flash("Enter the receiver for stock out.", "error")
+            return render_template("transaction.html", boms=boms, form=request.form), 400
         try:
-            new_balance, po_id = record_transaction(db, bom_id, txn_type, quantity, g.user["user_id"])
+            new_balance, po_id = record_transaction(
+                db, bom_id, txn_type, quantity, g.user["user_id"], vendor=vendor, receiver=receiver,
+            )
         except TransactionError as exc:
             flash(str(exc), "error")
             return render_template("transaction.html", boms=boms, form=request.form), 400

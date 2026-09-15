@@ -27,12 +27,16 @@ def index():
     low = d.execute("SELECT COUNT(*) FROM bom WHERE is_active = 1 "
                     "AND current_balance <= safety_stock_level").fetchone()[0]       # FR11
     pending_po = d.execute("SELECT COUNT(*) FROM purchase_order WHERE status = 'Generated'").fetchone()[0]
+    carrying_cost = d.execute(
+        "SELECT COALESCE(SUM((opening_balance - current_balance) * price), 0) FROM bom WHERE is_active = 1"
+    ).fetchone()[0]
     recent = d.execute(
         """SELECT t.txn_type, t.quantity, t.txn_date, b.bom_name, u.username
            FROM stock_transaction t JOIN bom b ON b.bom_id = t.bom_id
            LEFT JOIN users u ON u.user_id = t.performed_by
            ORDER BY t.txn_id DESC LIMIT 8""").fetchall()
-    return render_template("dashboard.html", total=total, low=low, pending_po=pending_po, recent=recent)
+    return render_template("dashboard.html", total=total, low=low, pending_po=pending_po,
+                           carrying_cost=carrying_cost, recent=recent)
 
 
 @dashboard.route("/low-stock")

@@ -146,25 +146,37 @@ def test_INV_FR_16_filter_by_stock_status(client):
 # ---- Stock transactions ----------------------------------------------------
 def test_INV_FR_08_stock_in_increases_balance(client, app):
     login(client, "staff", "staff123")
-    client.post("/transactions/", data={"bom_id": "BOM-001", "txn_type": "IN", "quantity": "30"})
+    client.post("/transactions/", data={"bom_id": "BOM-001", "txn_type": "IN", "quantity": "30", "vendor": "Acme"})
     assert balance(app, "BOM-001") == 150
 
 
 def test_INV_FR_09_stock_out_decreases_balance(client, app):
     login(client, "staff", "staff123")
-    client.post("/transactions/", data={"bom_id": "BOM-001", "txn_type": "OUT", "quantity": "20"})
+    client.post("/transactions/", data={"bom_id": "BOM-001", "txn_type": "OUT", "quantity": "20", "receiver": "Line 2"})
     assert balance(app, "BOM-001") == 100
+
+
+def test_INV_FR_XX_stock_in_and_out_record_party_details(client, app):
+    login(client, "staff", "staff123")
+    client.post("/transactions/", data={"bom_id": "BOM-001", "txn_type": "IN", "quantity": "10", "vendor": "Acme Supplies"})
+    client.post("/transactions/", data={"bom_id": "BOM-001", "txn_type": "OUT", "quantity": "5", "receiver": "Assembly Line A"})
+    with app.app_context():
+        rows = get_db().execute(
+            "SELECT txn_type, vendor, receiver FROM stock_transaction WHERE bom_id='BOM-001' ORDER BY txn_id DESC LIMIT 2"
+        ).fetchall()
+    assert rows[0]["txn_type"] == "OUT" and rows[0]["receiver"] == "Assembly Line A"
+    assert rows[1]["txn_type"] == "IN" and rows[1]["vendor"] == "Acme Supplies"
 
 
 def test_INV_FR_10a_stock_out_over_balance_rejected(client, app):
     login(client, "staff", "staff123")
-    r = client.post("/transactions/", data={"bom_id": "BOM-001", "txn_type": "OUT", "quantity": "121"})
+    r = client.post("/transactions/", data={"bom_id": "BOM-001", "txn_type": "OUT", "quantity": "121", "receiver": "Line 9"})
     assert r.status_code == 400 and balance(app, "BOM-001") == 120     # NFR-07 boundary: balance+1
 
 
 def test_INV_NFR_07_stock_out_equal_to_balance_allowed(client, app):
     login(client, "staff", "staff123")
-    client.post("/transactions/", data={"bom_id": "BOM-001", "txn_type": "OUT", "quantity": "120"})
+    client.post("/transactions/", data={"bom_id": "BOM-001", "txn_type": "OUT", "quantity": "120", "receiver": "Line 9"})
     assert balance(app, "BOM-001") == 0
 
 
@@ -180,11 +192,23 @@ def test_INV_FR_11_dashboard_shows_low_stock_count(client):
     assert b"at or below safety stock" in client.get("/dashboard").data
 
 
+def test_INV_FR_XX_dashboard_shows_monthly_carrying_cost(client, app):
+    login(client)
+    with app.app_context():
+        db = get_db()
+        db.execute("UPDATE bom SET opening_balance = 150, current_balance = 120, price = 5.00 WHERE bom_id='BOM-001'")
+        db.execute("UPDATE bom SET opening_balance = 80, current_balance = 60, price = 4.00 WHERE bom_id='BOM-002'")
+        db.commit()
+    r = client.get("/dashboard")
+    assert b"Monthly carrying cost" in r.data
+    assert b"230.00" in r.data
+
+
 def test_INV_FR_18_auto_po_generated_when_balance_reaches_safety_stock(client, app):
     login(client, "staff", "staff123")
     with app.app_context():
         assert get_db().execute("SELECT 1 FROM purchase_order WHERE bom_id='BOM-001'").fetchone() is None
-    r = client.post("/transactions/", data={"bom_id": "BOM-001", "txn_type": "OUT", "quantity": "90"},
+    r = client.post("/transactions/", data={"bom_id": "BOM-001", "txn_type": "OUT", "quantity": "90", "receiver": "Warehouse"},
                     follow_redirects=True)
     assert b"purchase order" in r.data
     with app.app_context():

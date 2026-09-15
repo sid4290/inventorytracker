@@ -14,9 +14,37 @@
     <label><input type="radio" name="txn_type" value="OUT" {{ 'checked' if form.get('txn_type') == 'OUT' }}> Stock out</label>
   </fieldset>
   <label>Quantity <input name="quantity" type="number" min="1" step="1" value="{{ form.get('quantity', '') }}" required></label>
+
+  {% set txn_type = form.get('txn_type', 'IN') %}
+  <div id="vendorField" {% if txn_type == 'OUT' %}hidden{% endif %}>
+    <label>Vendor <input name="vendor" value="{{ form.get('vendor', '') }}" {{ 'required' if txn_type == 'IN' else '' }}></label>
+  </div>
+  <div id="receiverField" {% if txn_type != 'OUT' %}hidden{% endif %}>
+    <label>Receiver <input name="receiver" value="{{ form.get('receiver', '') }}" {{ 'required' if txn_type == 'OUT' else '' }}></label>
+  </div>
+
   <div class="actions">
     <button class="primary">Record transaction</button>
     <a class="button" href="{{ url_for('bom.list_bom') }}">Cancel</a>
   </div>
 </form>
+<script>
+  const txnTypeInputs = document.querySelectorAll('input[name="txn_type"]');
+  const vendorField = document.getElementById('vendorField');
+  const receiverField = document.getElementById('receiverField');
+  const vendorInput = vendorField.querySelector('input');
+  const receiverInput = receiverField.querySelector('input');
+
+  function syncTxnFields() {
+    const type = document.querySelector('input[name="txn_type"]:checked')?.value || 'IN';
+    const isIn = type === 'IN';
+    vendorField.hidden = !isIn;
+    receiverField.hidden = isIn;
+    vendorInput.required = isIn;
+    receiverInput.required = !isIn;
+  }
+
+  txnTypeInputs.forEach((input) => input.addEventListener('change', syncTxnFields));
+  syncTxnFields();
+</script>
 {% endblock %}
