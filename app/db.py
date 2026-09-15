@@ -22,6 +22,7 @@ CREATE TABLE IF NOT EXISTS bom (
     bom_id             TEXT    PRIMARY KEY,            -- FR13: unique
     bom_name           TEXT    NOT NULL,
     category           TEXT    NOT NULL,
+    unit               TEXT    NOT NULL DEFAULT 'pcs',
     price              REAL    NOT NULL CHECK (price >= 0),
     opening_balance    INTEGER NOT NULL CHECK (opening_balance >= 0),
     current_balance    INTEGER NOT NULL CHECK (current_balance >= 0),  -- NFR-07

@@ -42,6 +42,10 @@ def _validate(form, editing=False):
     if data["category"] not in CATEGORIES:
         errors["category"] = "Choose a category."
 
+    data["unit"] = form.get("unit", "").strip()
+    if not data["unit"]:
+        errors["unit"] = "Enter a unit, such as pcs, kg, or L."
+
     for field, label, kind, minimum in (
         ("price", "price", float, 0),
         ("safety_stock_level", "safety stock level", int, 0),
@@ -113,11 +117,11 @@ def add():
             return render_template("bom_form.html", mode="add", form=request.form,
                                    errors=errors, categories=CATEGORIES), 400
         db.execute(
-            """INSERT INTO bom (bom_id, bom_name, category, price, opening_balance,
+            """INSERT INTO bom (bom_id, bom_name, category, unit, price, opening_balance,
                                 current_balance, safety_stock_level, reorder_qty,
                                 created_by, created_date)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-            (data["bom_id"], data["bom_name"], data["category"], data["price"],
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+            (data["bom_id"], data["bom_name"], data["category"], data["unit"], data["price"],
              data["current_balance"],            # opening balance captured on first entry (FR3)
              data["current_balance"], data["safety_stock_level"], data["reorder_qty"],
              g.user["user_id"], now()),
@@ -143,10 +147,10 @@ def edit(bom_id):
             return render_template("bom_form.html", mode="edit", bom=row, form=request.form,
                                    errors=errors, categories=CATEGORIES), 400
         db.execute(
-            """UPDATE bom SET bom_name = ?, category = ?, price = ?,
+            """UPDATE bom SET bom_name = ?, category = ?, unit = ?, price = ?,
                               safety_stock_level = ?, reorder_qty = ?
                WHERE bom_id = ?""",
-            (data["bom_name"], data["category"], data["price"],
+            (data["bom_name"], data["category"], data["unit"], data["price"],
              data["safety_stock_level"], data["reorder_qty"], bom_id),
         )
         ensure_purchase_order(db, bom_id)            # safety stock may have been raised

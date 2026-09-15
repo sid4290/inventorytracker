@@ -21,6 +21,7 @@
     </select>
     {% if errors.get('category') %}<em>{{ errors['category'] }}</em>{% endif %}
   </label>
+  {{ field('unit', 'Unit', hint='e.g. pcs, kg, L, box') }}
   {{ field('price', 'Unit price', 'number', 'step="0.01" min="0"') }}
   {% if mode == 'add' %}
     {{ field('current_balance', 'Current balance', 'number', 'min="0" step="1"', 'Saved as the opening balance on first entry.') }}

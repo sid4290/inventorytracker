@@ -32,7 +32,7 @@ def login(client, username="manager", password="manager123"):
 
 def bom_form(**over):
     data = {"bom_id": "BOM-900", "bom_name": "Test widget", "category": "Component",
-            "price": "5.00", "current_balance": "100", "safety_stock_level": "10", "reorder_qty": ""}
+            "price": "5.00", "unit": "pcs", "current_balance": "100", "safety_stock_level": "10", "reorder_qty": ""}
     data.update(over)
     return data
 
@@ -74,6 +74,7 @@ def test_INV_FR_03_add_bom_captures_opening_balance(client, app):
     with app.app_context():
         row = get_db().execute("SELECT * FROM bom WHERE bom_id='BOM-900'").fetchone()
     assert row["opening_balance"] == 100 and row["current_balance"] == 100
+    assert row["unit"] == "pcs"
     assert row["reorder_qty"] == 20   # default = safety stock × 2
 
 
@@ -124,6 +125,16 @@ def test_INV_FR_12_search_by_name(client):
     login(client)
     r = client.get("/bom/?q=bolt")
     assert b"BOM-002" in r.data and b"BOM-001" not in r.data
+
+
+def test_INV_FR_XX_bom_list_shows_carrying_cost(client, app):
+    login(client)
+    with app.app_context():
+        get_db().execute("UPDATE bom SET opening_balance = 150, current_balance = 120, price = 5.00 WHERE bom_id = 'BOM-001'")
+        get_db().commit()
+    r = client.get("/bom/")
+    assert b"Carrying cost" in r.data
+    assert b"150.00" in r.data
 
 
 def test_INV_FR_16_filter_by_stock_status(client):
@@ -207,9 +218,9 @@ def test_INV_NFR_10_1000_boms_10000_transactions(client, app):
         db = get_db()
         uid = db.execute("SELECT user_id FROM users WHERE username='staff'").fetchone()[0]
         db.executemany(
-            "INSERT INTO bom (bom_id,bom_name,category,price,opening_balance,current_balance,"
-            "safety_stock_level,reorder_qty,created_by,created_date) VALUES (?,?,?,?,?,?,?,?,?,'2026-09-03')",
-            [(f"L-{i:04d}", f"Load item {i}", "Component", 1.0, 1000, 1000, 10, 20, uid) for i in range(1000)])
+            "INSERT INTO bom (bom_id,bom_name,category,unit,price,opening_balance,current_balance,"
+            "safety_stock_level,reorder_qty,created_by,created_date) VALUES (?,?,?,?,?,?,?,?,?,?,'2026-09-03')",
+            [(f"L-{i:04d}", f"Load item {i}", "Component", "pcs", 1.0, 1000, 1000, 10, 20, uid) for i in range(1000)])
         db.commit()
         for i in range(10000):
             record_transaction(db, f"L-{i % 1000:04d}", "OUT" if (i // 1000) % 2 else "IN", 1, uid)

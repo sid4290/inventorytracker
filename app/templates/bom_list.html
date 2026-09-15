@@ -11,11 +11,11 @@
 </form>
 {% if boms %}
 <table>
-  <thead><tr><th>ID</th><th>Name</th><th>Category</th><th class="num">Price</th><th class="num">Balance</th><th class="num">Safety stock</th><th>Status</th><th></th></tr></thead>
-  <tbody>{% for b in boms %}{% set st = stock_status(b) %}
+  <thead><tr><th>ID</th><th>Name</th><th>Category</th><th>Unit</th><th class="num">Price</th><th class="num">Carrying cost</th><th class="num">Balance</th><th class="num">Safety stock</th><th>Status</th><th></th></tr></thead>
+  <tbody>{% for b in boms %}{% set st = stock_status(b) %}{% set carrying_cost = (b.opening_balance - b.current_balance) * b.price %}
   <tr class="{{ 'low' if st == 'Low Stock' }}">
-    <td>{{ b.bom_id }}</td><td>{{ b.bom_name }}</td><td>{{ b.category }}</td>
-    <td class="num">{{ '%.2f'|format(b.price) }}</td><td class="num">{{ b.current_balance }}</td>
+    <td>{{ b.bom_id }}</td><td>{{ b.bom_name }}</td><td>{{ b.category }}</td><td>{{ b.unit }}</td>
+    <td class="num">{{ '%.2f'|format(b.price) }}</td><td class="num">{{ '%.2f'|format(carrying_cost) }}</td><td class="num">{{ b.current_balance }}</td>
     <td class="num">{{ b.safety_stock_level }}</td>
     <td><span class="badge {{ 'warn' if st == 'Low Stock' else 'ok' }}">{{ st }}</span></td>
     <td class="row-actions">
